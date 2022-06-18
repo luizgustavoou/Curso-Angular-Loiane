@@ -1,0 +1,28 @@
+<h5>Diretiva *ngFor</h5>
+
+<ul>
+    <li *ngFor="let curso of cursos; index as i" > <!-- ou let curso of cursos; index as i --> <!-- ou let curso of cursos, let i = index -->
+        {{ i }} - {{ curso }}
+    </li>
+</ul>
+
+<h5>Removendo o * e usando template</h5>
+
+
+<h6>Jeito Angular Site:</h6>
+<ng-template ngFor let-curso [ngForOf]="cursos" let-i="index">
+    <li>{{ i }} - {{ curso }}</li>
+</ng-template>
+
+<br>
+
+<h6>Jeito Loiane: </h6>
+<ul>
+    <ng-template ngFor [ngForOf]="cursos" let-curso let-i="index">
+    <li >
+        {{ i }} - {{ curso }}
+    </li>
+    </ng-template>
+</ul>
+
+

@@ -1,0 +1,21 @@
+<!-- A diretiva routerLinkActive que podemos setar. Se a gente fizer isso, quando a rota de login estiver ativa, esse li vai receber a classe active do CSS -->
+<nav *ngIf="mostrarMenu" >
+    <div class="nav-wrapper">
+      <a routerLink="" class="brand-logo right">Rotas Ng2</a>
+      <ul id="nav-mobile" class="left hide-on-med-and-down">
+        <li routerLinkActive="active"><a routerLink="/login">Login</a></li>
+        <li routerLinkActive="active"><a routerLink="">Home</a></li>
+        <li routerLinkActive="active"><a routerLink="/cursos" [queryParams]="{pagina:1}">Cursos</a></li>
+        <!-- <li routerLinkActive="active"><a [routerLink]="['/curso', idCurso.value]">Curso com Id</a></li> -->
+        <li routerLinkActive="active"><a routerLink="/alunos">Alunos</a></li>
+
+      </ul>
+    </div>
+</nav>
+
+<div class="container">
+  <!-- <p>Entre com o id do curso</p> -->
+  <!-- <input #idCurso (input)="0"> --> <!-- ou (keyup)="0".  (keyup)="0" significa, quando esse evento acontece, então retornar 0 , o que é bastante equivalente a "não fazer nada". -->
+  <router-outlet></router-outlet> <!-- O componente das rota é renderizado dentro dess tag -->
+</div>
+

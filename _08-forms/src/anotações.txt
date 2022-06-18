@@ -1,0 +1,665 @@
+#Curso Angular #72: Formulários (template vs data / reativo) Introdução
+- O Angular tem duas formas de utilizar par se trabalhar com os formularios, que é o:
+	1) Template Driven
+	2) Data Driven (Reativo)
+
+1) Template Driven
+	- Formulário é criado e configurado no HTML
+	- Validaçoes sao feitas no template do HTML (campo obrigatorio, tamanho minimo, maximo,...)
+	- Angular cria/deduz um FormGroup do cod HTML (colocamos diretivas, tanto no formulario quanto nos campos de imput, select e etc para o Angular saber que queremos gerenciar aqueles campos)
+	- Valores do form são submetidos com ngSubmit
+
+
+2) Data Driven
+	- Formulário é criado e configurado no Componente (no HTML fica apenas a estrutura básica)
+	- Validaçoes sao feitas no Component (No HTML se faz apenas uma referencia para associar a informaçao do HTML com o componente)
+	- Angular usa o FormGroup criado no Component (utliza controladores da propria API)
+	- Form já está no Component e não precisa do ngSubmit
+
+- Não tem uma forma melhor que outra, apenas preferencia
+
+
+#Curso Angular #73: Formulários - Criando o projeto inicial com Bootstrap 3
+- Baixar Bootstrap
+	>> npm install bootstrap
+	- Adicionar em angular.json, em styles: "node_modules/bootstrap/dist/css/bootstrap.min.css"
+
+- Baixar ngx bootstrap
+	>> npm install ngx-bootstrap --save
+    - Adicionar em angular.json, em styles: "node_modules/bootstrap/dist/css/bootstrap.min.css"
+	- Cada módulo que quiser utilizar (Alerts, ...) que necessita integração com o JQUERY tem os módulos que pode utilizar no projeto.
+
+
+- Sobre as classes do boostrap:
+	- Para cada linha (caso queria o seu campo em uma linha) usa-se class="form-group"
+	- Para cada input utiliza o class="form-control"
+
+
+#Curso Angular #74: Forms (template driven) Controles ngForm, ngSubmit e ngModel
+- Iremos aprender como integrar com a API do Angular, para dizer ao Angular que isso é um formulário e que o Angular deve gerenciar essas informações com ngForm, ngSubmit e ngModel.
+
+- Como podemos falar para o Angular que ele ajuda a gerenciar o formulário?
+
+- Primeira coisa é criar uma variávl local para fazer uma referência a esse formulário. Agora precisa associar essa variável local do formulário a uma diretiva do Angular, chamada de ngForm (<form #f="ngForm" ...). Com isso está falando ao Angular que ele ajude a gerenciar.
+
+- Lembrar que: Tanto o ngForm, ngSubmit e ngModel pertencem ao FormsModule.
+
+- Se a gente quiser submeter esse form.. tem um botão do tipi submit, então quando clicar nesse botão pode pedir para o Angular fazer a submissão do form. Para isso tem o evento ngSubmit (ngSubmit)="onSubmit()"
+
+- Porém, esse ngSubmit, como fazer referência para essa variável #f que é do tipo formulário? Poderia colocar um viewChild, mas como já tem a referência da variável pode-se passar no parametro do ngSubmit a variavel local do formulario (#f)
+
+- Ao dar console.log do form, pode-se ver que os valores do formulário (value) estão vázio mesmo tendo colocado informaçoes no formulario. Então precisamos ainda associar cada campo de input com um campo de valor do formulario, utilizando a diretiva do ngModel, alem de criar o name do input. Dessa forma estamos associando que o campo de input cujo nome é "nome" a diretiva do ngModel para um campo do formulario.
+
+
+#Curso Angular #75: Forms (template driven) Inicializando valores com ngModel
+- Aprenderemos como inicializar valores com o ngModel, conhecido como two-way-data-bind.
+
+- Com ngModedel pode-se utilizar também somente o propety bind. Nesse caso vai ser apenas inicializado o valor que está vindo do objeto no Component. Se fizer uma mudança o objeto não vai ser atualizado.
+
+
+#Curso Angular #76: Forms (template driven) Módulos e FormsModule
+- Quando inicia o projeto e ta tudo no app.module nao vai ter problema de se trabalhar com formularios pois o Anuglar Cli automaticamente ja faz esse import do FormsMudule e coloca na area de imports.
+
+- Mas caso trabalhe com lazy loading e trabalhe com outros modulos, essa informaçao nao vem disponivel para a gente e ter um erro.
+
+- Ao criar um novo módulo funcional TemplateFormModule dentro do template-form e importar no módulo raiz, dará um erro relacionado ao ngForm. Lembrar que o ngForm, ngSubmit e ngModel pertencem ao FormsModule. Como agora o componente TemplateFormComponent pertence ao modulo funcional TemplateFormModule, precisa colocar nos imports, tambem, o FormsModule.
+
+
+#Curso Angular #77: Forms (template driven) Aplicando validação nos campos
+- Aprender como validar com as validações que já vem do próprio Angular e também utilizando as validações do HTML5.
+
+- No Angular 2, se quiser validar o email tem que colocar a expressão: pattern="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?". Apenas no Angular 4 que tem a validação email, bastando utilizar a diretiva "email"
+
+- Mesmo com a validação consegue-se submeter o formulário pela ausência de controle extra para isso, nem mensagem css na tela.
+
+- Leitura complementar: https://www.the-art-of-web.com/html/html5-form-validation/
+
+
+#Curso Angular #78: Forms (template driven) Aplicando CSS na validação dos campos
+- Ao inspecionar o elemento do input nome pode-se ver que dentre outras classes presente, o Angular aplica as classes ng-dirty, ng-touched e ng-invalid.
+
+- O Angular trabalha com algumas classes e essas classes são aplicadas dependendo do estado do controle. Esse controle pode ser tanto formulário em si, quanto pode ser o campo específico do formulário. Por isso não falamos Campo Visitado, mas sim Controle Visitado.
+
+
+- Se o campo ou formulário recebeu o foco e perdeu o foco (ou seja, foi visitado) o Angular vai aplicar a classe ng-touched, caso contrário aplica a classe ng-untouched.
+
+- Se algum campo do formulário mudar, a classe aplicada vai ser ng-dirty, caso contrário ng-pristine.
+
+- Se o formulário ou campo for válido, aplica a classe ng-valid, caso contrário ng-invalid.
+
+- Ao colocar no CSS:
+	.ng-invalid {
+    border: 1px solid red;
+	}
+
+- Nota-se que ficou vermelho nao apenas o campo, mas tambem o formulario, pois essas classes sao aplicadas aos controles e o formulario em si é um controle. Para resolver isso coloque:
+	.ng-invalid:not(form)t{
+    border: 1px solid red;
+	}
+
+- Assim essa classe vai ser aplicada em todos os componentes exceto na tag do form. Porem, se colocar null no atributo do component, o campo ja sera renderizado com essa classe com a borda vermelha. Para evitar isso, basta colocamos no CSS para aplicar somente se o campo ter recebido o foco, para isso aplique:
+	.ng-invalid.ng-touched:not(form) {
+    border: 1px solid red;
+	}
+
+
+#Curso Angular #79: Forms (template driven) Mostrando mensagens de erro de validação
+- Ao abrir o objeto NgForm no console podemos ver um atributo chamado controls. Esses controles serão os mesmos controles que iremos trabalhar com os formulários reativos. Lembrando que quando a gente adiciona essas diretivas nos formulários do Angular, por trás dos panos o Angular está criando um formulário reativo e isso só fica abstraido para gente.
+
+- Então, nos controles nos temos o email e o nome. No caso do nome podemos ver que tem propriedades relacionadas tambem as validaçoes.
+
+- Nós podemos utilizar essas informaçoes do controle para deixar as nossas mensagens de erro um pouco mais dinamicas. Assim, iremos associar o ngModel a variavel local do input para ter essas informaçoes do controle visiivel. #nome="ngModel"
+
+
+#Curso Angular #80: Forms (template driven) Desabilitando o botão de submit para formulário inválido
+- Ao ver o NgForm no console, há uma propriedade value que podemos manipular para configurar o disabled.
+
+
+#Curso Angular #81: Forms (Dica): Verificando dados do Form no template com JSON
+- Usaremos os propios PIPES do Angular para verificar as informacoes na tela. Isso pode ser uma especie de debug quando estivermos desenvolvendo o formulario.
+
+- Cria um componente form-debug, coloque no module do template form...
+
+
+#Curso Angular #82: Forms (template driven) Adicionando campos de endereço (form layout Bootstrap 3)
+- Hoje iremos continuar um assunto sobre formulários e adicionar campos de endereços para aprendemos como podemos fazer layouts diferentes de usuarios (bootstrap 3). Pode aplicar esse conceito com qualquer outro framework CSS de sua preferência.
+
+
+#Curso Angular #83: Forms (template driven) Refatorando (simplificando) CSS e mensagens de erro
+- Usando a diretiva ngClass vai permitir que tenha mais de reuso de código. Iremos continuar o codigo que esta na diretiva, ir no componente e criar um metodo (aplicaCssErro).
+
+
+#Curso Angular #84: Forms (template driven) Form groups (agrupando dados)
+- Aprenderemos como agrupar campos do formulário em um outro objeto.
+
+- No caso de formulário estilo template é simples. Basta localizar no formulário quais são so campos que queremos agrupar (no caso vai de CEP até o final dos campos).
+
+- No Angular existe uma outra diretiva chamada ngModelGroup. Assim podemos ter alinhamento de dados de acordo com a necessidade que tiver no formulário.
+
+
+#Curso Angular #85: Forms (template driven) Pesquisando endereço automaticamente com CEP
+- Hoje aprenderemos como utilizar o webservice para poder pesquisar o endereço através do CEP e popular os outros campos do formulário automaticamente com os resultados obtidos através da chamada do webservice.
+
+- Para isso usaremos o webservice já existente, que é o viaCEP, que é um webservice grauito, com suporte javascript e para outras linguagens.
+
+- Quando trabalha com Javascript é muito mais fácil obter um JSON do que qualquer outro formato.
+
+- Link da documentação: https://viacep.com.br
+
+- Como utilizar o webservice no nosso formulário? 
+
+- Quando o evento de blur acontecer no campo cep, isto é, quando o campo cep perder o foco, iremos chamar a função.
+	>> pegar o valor do formulario e remover todos os caracteres que nao sejam numeros (com replace)
+	>> verificar se apos remover os caracteres nao numericos o cep eh diferente de vazio
+	>> se for diferente de vazio temosu uma expressao regular para validar o cep, uma expressao regular de 8 digitos que vao de 0 a 9
+	>> verificar se o cep é valido
+
+- Não iremos fazer a chamada AJAX do json do JQUERY, mas sim utilizar a chamada AJAX e obter o json utilizando o proprio Angular. O Angular possui um objeto chamado HTTP (parecido com o AngularJS). 
+
+- Para utilizar o objeto http é necessario injetar primeiro no constructor. Precisa importar o HttpClientModule tambem no modulo onde esta o template-form-component.
+
+- Como é um webservice (nos vamos buscar valores no servidor) utilizaremos uma requisicao get.
+
+- this.http.get(`https://viacep.com.br/ws/${cep}/json`) quando faz essa chamada no Angular, pode-se ver que é retornado um Observable. Entao quando fizer esse retorno, vai ter um retorno de response do servidor (resposta do servidor onde consegue obter a mensagem de erro e os dados que foram enviados para o servidor)
+
+- O axjs possue alguns operadores, e o operador que vai ser utilizado eh o map, e eh muito parecido com uma funçao map do array do JS, ou seja, ele vai obter uma informaçao e vai mapear em outra informaçao. Nesse caso vai pegar os dados que estao sendo enviados pelo servidor (que esta em formato json) e entao chamar a funçao json.
+
+- No JQUERY ele ja pega a resposta do servidor e transforma em JSON automaticamente. Quando trabalha no Angular com RXJS essa informaçao ai nao esta transformada em json e precisamos fazer isso ?automaticamente? manualmente.
+
+- Porem ainda nao eh suficiente. Precisa obter essa informaçao de alguma forma tambem. Para isso utiliza-se o operador subscribe. Ele funciona da mesma forma que a gente faz uma inscriçao (Subscription) para um canal do youtube. Assim vc podera ver os videos publicados nos canais que vc ta escrito. Da mesma forma no Angular, nesse caso o RXJS vai notificar a gente quando a informaçao ficar pronta (similar ao callback das promises ou o callback do JQUERY com a chamada "... $.getJSON() ...")
+
+
+#Curso Angular #86: Forms (template driven) Populando campos com setValue e patchValue (CEP)
+- Vamos popular os campos com dois metodos: Utilizando setValue e patchValue, assim como a diferença de quando utilizar um ou outro.
+
+- Ao criar o método populaDadosForm, como estamos trabalhando com formulário do tipo Template Driven (com toda a lógica no template do HTML), precisa também de um parâmetro que faça referencia ao formulario. Assim, na chamada do event binding blur, passar a referencia do formulario.
+
+- o metódo setValue() recebe um objeto como parametro, e dentro desse objeto passaremos cada campo que temos no formulario, e sempre utilizando o nome dos campos. Porém, utilizar o setValue() tem um pequeno detalhe, as informaçoes do formulario vao ser populadas, porem o nome e email sao resetados. Nesse caso, para nao perder as informaçoes de nome e email que ja foram populada, utilizar o form.value.nome e form.value.email. Mas tem um problema, imagine que o formulario tenha 50 campos, teria que repetir todos os campos!
+
+- Por isso que o formulario tem o patchValue, que é da classe FormGroup. O patchValue é como se fosse um arremendo, ou seja, iremos apenas configurar parte do formulario, sem mexer nas outras. Ele funciona da mesma forma que o setValue, porem, o objeto colocado é apenas o arremendo das partes que precisamos, sem contar com nome e email por exemplo
+
+
+#Curso Angular #87: Forms (template driven) Submetendo valores com HTTP POST
+- Nós vamos emular a submissão de valores utilizando http post. Ou seja, iremos simular o envio das informaçoes do nosso formulario para o servidor.
+
+- Vai ser o proprio objeto contendo os valores do formulario a ser enviado para o servidor. Ao ver o objeto NgForm no console, pode-se ver em value o proprio objeto falado, com nome, email e outro objeto de endereço.
+
+- Para fazer essa chamada do servidor utiliza-se o mesmo objeto http utilizando uma requisicao post, muito similiar com a requisicao do get. Entao iremos utilizar qual é o link (endereço do servidor) e precisa passar tambem a informaçao que estamos enviando para o servidor.
+	>> this.http.post('enderecaoServer;formusuario', )
+
+- Esse objeto passado é um objeto qualquer. So que como estamos enviando ou recebendo inforamçoes do servidor, queremos trabalhar com formato de dados mais faceis para ler ou receber. No caso em aplicaçoes JS, recebemos e enviamos em um objeto json.
+
+- Para transformar o form.value em JSON utiliza a propria API do json do javascript.
+	>> JSON.parse (receber uma string e transforamr em json)
+	>> JSON.stringify(form.value): vai transforamar essas informaçoes em json no formato string para poder enviar ao servidor
+
+- Para verificar as chamadas ao servidor, abre o console e vá em network. Clica em json e vai em response pra ver como foi que o servidor retornou.
+
+- O envio para o servidor nao vai aparecer nada pois precisa de informaçoes adicionais, como fez na chamada do get, como o map (para mapear a resposta que ta sendo recebida pelo servidor) e fazer um subscribe para concretizar a chamada.
+
+- Apos isso, pode-se ver no network que temos a chamada para o servidor. Em preview mostra que nao temos resposta pois o endereço nao existe (estamos simulando). E no console da um erro http 404 pois o endereço nao existe. Quando faz essa requisiçao, automaticamente vai pegar o proprio domiino que eh localhost:4200
+
+- Poderia usar o proprio catch do Observable para tratar essas informaçoes.
+
+- Existe um envio de informaçoes para um teste online: https://resttesttest.com. Nesse caso a submissao eh feita com sucesso, e na aba de response pode ser visualizadas o que o servidor envia de volta para a gente.
+
+- No servidor a gente iria obter o request payload (toda a informaçao que esta vindo como post, nesse caso cada linguagem tem uma diferença) e conseguiria obter essas informaçoes pra fazer um CRUD no banco de dados.
+
+
+#Curso Angular #88: Formulários reativos (data driven) Introdução
+- Orientado a template: Formulário é criado e configurado no HTML. Angular deduz um FormGroup a partir do HTML.
+
+- Orientado a dados: Formulário é criado programaticamente e é sincronizado com o DOM/HTML.
+
+- O próprio time do Angular da preferência aos formulários reativos, justamente pelo seu poder e internamente esse formulário utilizar os Observable para conseguimos reagir as mudanças que ocorrem no formulário.
+
+
+#Curso Angular #89: Formulários reativos: Configuração (Módulo e Componente)
+- Todo o código será dentro do componente, no HTML vai ficar apenas a estrutura do formulário, com a tag form e as tag do input.
+
+- Primeiro é necessário importar no módulo o ReactiveFormsModule. Criar a variável que vai representar o formulário no componente. Ela irá representar o formulário, onde iremos adicionar os campos e todas as validações e agrupamento de dados.
+
+
+#Curso Angular #90: Formulários reativos: Criando um form com código Angular
+- Geralmente criamos o formulário no componente dentro do ngOnInit ou até no constructor. No entanto, prefere-se criar no ngOnInit pois criamos o formulário no momento da inicialização do componente.
+
+- A classe FormGroup recebe um objeto como parametro, e como parametro serao os campos que queremos declarar ao formulario.
+
+- Cada input é um controle do nosso formulario (form control). O FormControl pode passar algumas informaçoes, e uma delas é o valor inicial. Por exemplo, se eu quero que o nome tenha valor inicial como loiane, pode-se colocar assim...
+	>> this.formulario = new FormGroup({
+      nome: new FormControl('Loiane')
+    });
+
+- Porém existe uma segunda forma que é utilizando o proprio construtor de formulario do Angular, ambas as formas estao corretas.
+
+- Essa segunda forma utiliza o formbuilder (que é o construtor de formulario). Para isso, precisamos injetar esse formbuilder no constructor.
+
+- Para criar o FormGroup é semelhante ao da primeira opção, a diferença vai ser na criaçao dos FormControl. Para criar um FormControl, declara o nome e no lugar do New FormControl() coloca-se um array com todos os parametros. O primeiro deles é o valor inicial do nome. Exemplo:
+	>> this.formulario = this.formBuilder.group({
+      nome: [null],
+      email: [null]
+    });
+
+
+#Curso Angular #91: Formulários reativos: Sincronizando HTML com FormGroup
+- Sincronizar as TAG input do HTML com o objeto FormGroup no componente.
+
+- Como iremos sincronizar a variavel formulario: FormGroup com a TAG do formulario. Para isso existe uma diretiva que é do ReactiveFormsModule chamada de formGroup. Além disso, precisamos fazer um property binding do formulario para sempre que o formulario modificar, mudar tambem no template.
+
+- Ao criar um módulo compartilhável e colocar a tag app-form-debug no data-form.component.html, pode-se ver que agora temos os detalhes do formulario tambem. Uma coisa importante tambem que ja temos os valores do formulario, nome e email que sao exatamente os valores que tem no formbuild ou formgroup (depende do que ter utilizado).
+
+- A vantagem de utilizar os formularios reativos eh que tem 2 campos, e pode ser visto facilmente no componente os valores do formulario sem precisar ficar olhando no HTML.
+
+- No entanto se digitarmos nos campos do input, nota-se que os valores nome ou email do formulario nao mudam. Isso é porque a associaçao com o formulario do componente ainda nao foi feito. E fazemos isso com a diretiva formControlName. Ou seja qual que é o nome que é utilizado no formulario do formBuilder. (nao precisa ter o name igual o Template Driven)
+
+
+#Curso Angular #92: Formulários reativos: Fazendo submit
+- A grande diferença do data-form.component para o template-form.component é que no segundo tinha a variavel local "f" e que faz referencia ao proprio ngForm, passando essa referencia ao evento (ngSubmit)="onSubmit(f)".
+
+- No data-form-component é diferente pois ja tem a variavel que representa o formulario no componente. Entao pode utilizar.
+
+- Fazer as mesmas coisas do método onSubmit no template-form.component. Lembrar de importar no módulo o HttpClientModule.
+
+
+#Curso Angular #93: Resetando o form
+- Ao fazer o submit limpar o formulário para o usuário.
+
+- O ideal é não colocar a chamada do reset do formulário dentro do onSubmit(). A ideia é que quando receber a resposta do servidor (uma resposta de sucesso) fazer o reset. E nesse caso, será colocado o reset dentro do .subscribe.
+
+- Para resetar o formulário no data-form basta fazer this.formulario.reset();, visto que o atributo ja faz referncia ao formulario (FormGroup). Já no template-form é necessário acessar a variavel de referencia ao formulario (do tipo NgForm) e acessar o atributo form (do tipo FormGroup) onde tem o metodo reset, ficando formulario.form.reset();
+
+- RESPOSTAS INTERNET NOS COMENTÁRIOS DO VÍDEO:
+	>> O map facilita a recuperação dos dados que estão na Observable, pq os dados que nos interessa dessa Observable vem sob várias camadas dentro do objeto. O método map foi atualizado, vc acessa ele dentro do pipe:
+	>> O pipe já é um filtro aonde agente pode "configurar a aparência dos dados". A junção do map com o pipe faz com que ele percorra o objeto de maneira mais rápida? Pq no caso do pipe, não estamos passando nenhuma configuração pra ele...
+
+
+#Curso Angular #94: Formulários reativos: Aplicando validação nos campos
+
+
+#Curso Angular #95: Formulários reativos: Acesso ao FormControl no HTML e CSS de validação dos campos
+- Para mostrar a validação do CSS no HTML precisamos adicionar as classes de CSS em cada campo para fazer a validação de CSS.
+
+- Fazer exatamente ao template-form. A maneira como trata é um pouco diferente, pois no template-form não tinhamos o acesso às variavéis dentro do código Angular no component, a gente usava com a referência do proprio campo do input pela variavel local no HTML. Assim, dentro do data-form-component já temos o acesso ao campo.
+
+- Pode fazer por exemplo com o controls e passar o campo, pois o JavaScript trata arrays e objetos como uma espécie de dicionários e então consegue fazer esse acesso.
+	>> this.formulario.controls[campo].valid
+
+- Só que existe também o método get passando o nome do campo
+	>> this.formulario.get(campo).valid que vai retornar a instancia do formControl e se foi valido.
+
+
+#Curso Angular #96: Formulários reativos: Endereço (migrando de template driven para form reativo)
+
+
+#Curso Angular #97: Formulários reativos: Form groups (agrupando dados)
+- Agrupar os campos de cep ate o estado dentro de um objeto chamado endereco. Para isso, no component coloca o nome do objeto recebendo o proprio formBuild.group({})
+
+- Agora precisa associar esse grupo no template. Para associar utiliza-se o formGroupName. Após isso, no console dara erro de "nao poder ler a propriedade nula", isso porque ao colocarmos os campos cep, estado e etc dentro de um formGroup, o caminho para acessa-los mudou.
+
+- Para resolver isso, coloque o novo caminho:
+	>> de aplicaCssErro('cep')
+	>> para aplicaCssErro('endereco.cep')
+
+
+#Curso Angular #98: Formulários reativos: Autopopulando endereço com CEP (setValue e patchValue)
+- Caso precise na hora de carregar o formulário e popular apenas um campo do formulário, pode utilizar o setValue do campo em específico:
+	>> this.formulario.get('nome').setValue('Loiane');
+
+
+#Curso Angular #99: Formulários reativos: Verificar validação dos campos com botão submit
+- Seria a mesma coisa, utilizando:
+	>> [disabled]="!formulario.valid"
+
+- Esse tipo de abordagem pode ser utilizada quando se tem uma página de login, com apenas o email e senha. E o usuário consegue deduzir facilmente que tem que entrar com essas duas informaçoes antes de enviar o formulario.
+
+- No entanto, a medida que o formulario cresçapode nao ficar tao simples para o usuario, como um campo que o usuario nao percebeu. Hoje aprenderemos uma forma diferente de fazer esse tipo de validaçao.
+
+- Iremos permitir que o usuario clique no botao Submit e iremos validar todos os campos. Os campos invalidos mostraremos a mensagem de erro. Assim o usuario conseguira facilmente perceber na tela quais sao os campos que tem erro.
+
+- Para isso temos que iterar cada campo de controle que nos temos no formulario. O "this.formulario.controls" é um array de controles, um grupo de controles, e a gente precisa iterar cada controle desse. No entanto se colocar um "." veremos que nao tem por exemplo, um lenght e nada. Esse campo pode ter varios atributos dentro dele, porem ele nao eh um array. Para isso precisaremos da ajuda do Javascript.
+
+- Na ECMA SCRIPT 2015 foi adicionada o metodo keys Object.keys() que consegue extrair cada chave que tem dentro do objeto. Entao se chamar esse Object.keys() do formulario controls ele ira extrair o nome, email e endereço.
+	>> Object.keys(this.formulario.controls)
+
+- Com isso esse Object.keys ira retornar uma coleçao. Nessa coleçao consegue fazer um forEach. Ao colocar:
+	>> controle.markAsDirty();
+
+- A marcação de dirty foi ativado para nome, email e endereço. O endereço é um conjunto de campo, um grupo de controles do formulario. Nao colocamos nenhuma validaçao no HTML para mostrar que o endereço esta incorreto, porem isso foi feito pelo por tras dos panos pelo Angular
+
+- Foi criado um outro método com a técnica de recursividade, pois antes estavam percorrendo, como falado, apenas o nome, email e endereço. Os objetos dentro de endereço nao estavam sendo percorridos, por isso usou-se a tecnica de recursividade para que percorra tambem os objetos dentro de endereço (cep, rua, cidade,....).
+
+
+#Curso Angular #100: Formulários: Criando um serviço de Estados Brasileiros
+- A ideia é adicionar novos tipos de controles no formulário, já que até agora foram campos do tipu input que são mais simples. Assim iremos transformar o campo estado de input para commonbox, dropdown ou select.
+
+- A lista de estados brasileiros são um exemplo de inforamçoes que nao precisa estar listado no banco de dados.
+
+- A diferença de intercace para classe é que a classe poderia ter metodos com corpo (entoa conseguiria ter um constructor, uma implementaçao de uma classe normalmente). A interface temos apenas a assinatura do que precisamos ter no objeto que vai implementar essa interface.
+
+
+#Curso Angular: Atualizando projetos para Angular v6
+- O que muda do HTTP para o HTTPCLIENT é simples. Não precisa de parcear o resultado para JSON, não precisa da parte do pipe e map. Por exemplo:
+	>> return this.http.get<EstadoBr[]>('assets/dados/estadosbr.json')
+    .pipe(map((res) => res));
+
+- Agora fica:
+	>> return this.http.get<EstadoBr[]>('assets/dados/estadosbr.json');
+
+- Pode fazer uso agora de generics, mudando assinatura de observable de array de string, por exemplo:
+	>> return this.http.get<String[]>('assets/dados/estadosbr.json');
+
+
+#Curso Angular #101: Formulários: Serviço de consulta CEP + provideIn
+- provideIn foi lançado a partir da versão 6 do Angular, uma forma de fornecer os serviços do Angular sem precisar declarar os serviços no providers de algum componente ou módulo.
+
+- Quando percebemos que estamos repetindo código, é o momento ideal de refatorar o código e criar um serviço reutilizável. Também é de boa prática ter uma chamada http diretamente no componente. Esse tipo de lógica é melhor passar para um serviço cuidar disso. No componente ter apenas a lógica necessária para o componente interegir com o template HTML do mesmo.
+
+- Como o serviço vai ser utilizado pelo data-form e template-form, será criado o serviço na pasta shared.
+
+- Vantagens do provideIn:
+	1) Angular é inteligente o suficiente para saber quais os lugares que está utilizando o serviço, e vai criar o bundle (pedacinho de código) no arquivo que é necessário. Isso ajuda a limpar código morto, pois as vezes voce cria o serviço e declara no providers  e depois acaba nao utilizando, porem o codigo vai ficar no bundle mesmo que voce nao precise pois voce declarou no providers;
+	2) Além disso, é uma forma efetiva do Angular criar instancia de componente e serviços. Visto que uma classe serviço nada mais é do que uma classe com decorator Injectable, sendo uma forma mais eficiente do Angular saber quais sao as classes que precisa instanciar sozinho sem que os nos precisamos fazer essa declaraçao explicita.
+
+- A gente pode lançar uma excessão, um erro ou vázio no consulta-cep.service caso o cep fornecido no parâmetro seja vazio, mas será para frente. Por enquanto será retornado um vazio.
+	>> return of({});
+
+
+#Curso Angular #102: Formulários reativos: Combobox simples (select)
+- Vamos começar a entrar em detalhes como trata cada tipo de campo (input) que podemos ter em um formulário.
+
+- Durante a aula de criação do dropdownService nós estamos fazendo a inscrição no nosso Observable diretamente no ngOnInit (no data-form.component.ts). Porém, no início do curso sobre PIPES aprendemos sobre um pipe chamado async. Dessa forma que estamos fazendo agora, o que vai acontecer é, nos estamos nos inscrevendo nesse Observable que está retornando a lista de estados e essa inscrição ela fica ativa na memória. Pode ser que mesmo ocorra destruição do componente (sem ele estar na tela) essa inscrição pode ainda ficar ativa, e com isso haver vazamento de memória.
+
+- Para evitar isso é sempre aconselhavel utilizar o PIPE async.
+	No lugar da a gente já colocar:
+		>> estados: EstadoBR[]
+	Colocar:
+		>> estados: Observable<EstadoBr[]>;
+
+- E no ngOnInit colocar pra o this.estados receber o dropdownServicec com o método getEstadosBr() sem precisar fazer o subscribe. Não iremos fazer o subscribe pois o PIPE async automaticamente já faz o subscribe para a gente, e assim que esse componente for destruido ele faz tambem o unsubscribe sem precisar fazer manualmente.
+
+
+#Curso Angular #103: Formulários reativos: Combobox com Objeto (ngValue e compareWith)
+- Pode ser que alguns casos queiramos usar objeto complexo. Por exemplo, no lugar de uma sigla como valor do select, talvez queiramos utilizar o proprio objeto Estado que tem id, sigla e nome como valor e enviar o valor dessa maneira para o servidor. Já que algunas linguagens de backend ou alguns frameworks precisa do objeto mapeado e nao apenas o ID, vai depender bastante de como vc esta trabalhando com todo o mapeamento no front ou back.
+
+- Após testar o método setarCargo() pode-se ver que após clicar o cargo agora tá como nome: dev nivel: pleno desc: dev pl. No entanto, na tela foi setado o valor de Dev Jr e isso está errado!
+
+- Pq isso acOntece? Isso tem haver como o Angular funciona em relação a select ou combobox. O Angular sempre trabalha com comparação de tres iguais (===), no JavaScript esse operador faz a comparação entre referencia de dois objetos, ou seja, é uma referencia de endereço de memoria.
+	
+- Pode ser que tenha um obj1 que esteja no endereço 123456
+
+- Pode ter o obj2 (que mesmo que o obj2 tenha as mesmas propriedades e mesmos valores do obj1), porem se ele estiver em um outro endereço de memoria o JS vai dar como falso, pois nao sao objetos iguais.
+
+- E o Angular utiiliza essa comparação de referencia na hora de trabalhar com select. Se a gente quiser que o Angular compare, alem de apenas a referencia do objeto, as propriedades nos temos que fazer 2 passos extras.
+
+- O primeiro passo é uma diretiva chamada ngValue. Como a gente quer trabalhar com objetos complexos e ainda comparar as propriedades, por padrão o Angular apenas vai verificar o endereço de memoria, mas podemos usar essa diretiva (ngValue) que é aplicada diretamente nos seletores de option do HTML, que ai sim o Angular vai verificar campo por campo, se esses campos mudarem o Angular é notificado que o Angular mudou. Assim, no lugar de [value] utilizaremos [ngValue].
+	>> [value]="cargo"
+	>> [ngValue]="cargo"
+	
+- Ao setar o cargo com o botão Cargo, ele seta nos valores do formulario mas o usuario nao eh mais induzido ao erro. Porem nao tem mais um valor sendo setado no select do html.
+
+- Ainda falta falar para o Angular como eh que nos queremos comparar esse objeto. Como iremos comparar o objeto cargo do setarCargo() com o objeto do dropdownService. Para isso o Angular tem uma outra diretiva do select chamada de compareWith. É uma funçao que vai receber dois objetos e retornar um boolean dizendo se eles sao iguais ou nao.
+
+- no compareWith ira comparar o nome e o nivel. Caso seja falso, deixa comparar o obj1 === obj2, que é o que Angular já faz. No codigo so está a funçao compareWith, sem passar os objetos, pois o Angular faz a chamada por trás, passando os parâmetros. Esse conceito é chamado de High Order Functions.
+
+- Se estiver trabalhando com valores simples pode usar o Value. Porem se estiver trabalhando com objetos como valores no select utilize o ngValue no lugar do value e tambem implemente uma funçao compareWith para que o Angular saiba comparar os valores e assim voce ter mais controle e poder escolher quais sao os campos que voce vai comparar para fazer a comparaçao dos objetos.
+
+- Site que explica bem: https://netbasal.com/understanding-the-comparefn-input-in-angular-v4-4a401ef4fc4c
+
+#Curso Angular #104: Formulários reativos: Combobox Múltiplo (Select Multiple)
+- Geralmente no combobox, no select, o usuario so pode selecionar uma opçao. Mas se botar um atributo multiple o usuario consegue escolher mais de uma opçao.
+
+
+#Curso Angular #105: Formulários reativos: Radio Button (Botão do tipo Rádio)
+- O formControlname é o mesmo em todos os radio, porém o valor que vai se diferenciar.
+
+
+#Curso Angular #106: Formulários reativos: Checkbox Toggle
+- Será criado aqueles campo de aceitar os termos.
+
+- Para fazer a validaçao do campo de checkbox depende de como seu formulario funcione. Existe a validaçao required e vai ver qualquer valor que seja diferente de nulo. Se clicar no checkbox vai ter valor como true. Porem se desmarcar vai ter valor de false que nao vai fazer o trigger da validaçao de campo invalido.
+
+- Uma outra validaçao do Angular é o pattern, utilizar para validar uma expressao regular. No caso do checkbox é facil pois sabemos que os valores sao true ou false.
+
+- Uma opção é usar Validators.requiredTrue em: termos: [null, Validators.requiredTrue]
+
+
+#Curso Angular #107: Formulários reativos: FormArray: Checkboxes Dinâmicos
+- Agora queremos que o usuario tenha opçao de marcar 1 ou mais chechboxs de um grupo de chekboxs.
+
+- Quando trabalha com multiplos valores para um campo no Angular, trabalha com o control formArray que pode utilizar tanto para chechboxs dinamicos ou formularios aninhados. Nessa aula veremos o caso mais simples que é para chechbox.
+
+- Após fazer o método buildFrameworks() pode-se ver que a parte de frameworks tem 4 campos false, e falta fazer o link do campo que temos no Angular com os campos na tela.
+
+- Assim como existe formControlname e formGroupName, existe o formArrayName que será usado no template.
+
+- Agora, o último passo para linkar cada campo checkbox com cada formControl false
+
+
+#Curso Angular #108: Formulários reativos: Validação Customizada (FormArray Checkboxes)
+- Criaremos uma costumização para que o usuário marque pelo menos 1 checkbox para que o formulário fique válido. E caso o usuário marque nenhum campo aparece uma mensagem de erro também.
+
+- Como estamos trabalhando com formArray é mais complicado pois as validações padroes não servem para gente.
+
+- A forma mais fácil de criar uma validação no Angular é através de uma função. Pode deixar essa funçao diretamente no componente, mas dependendo do projeto e do tipo de validaçao voce começar a criar sua propria API (biblitoecca de validaçoes) para reutilizar nos projetos. Iniicalmente vai ser criado no componente depois passa a logica para uma classe reutilizavel.
+
+- A função de validação vai receber um valor no parametro e o Angular por tras dos panos vai passar o formArray para nossa validaçao que vai estar deentro do evento.
+
+- Se o campo estiver válido retornamos nulo (null) e se não estiver válido precisa retornar um objeto (o Angular necessita que retorne um objeto) geralmente como chave do objeto vamos passar qual que é a validaçao que vai estar falhando, e nesse caso colocamos required mestro com valor true.
+
+- Com programação funcional(reativa): após o map se tem um Array de true ou false. Após isso utiliza-se uma outra função do array chamado reduce que vai reduzir todos os valores do array em apenas um valor, é muito utilizado por exemplo para fazer somatória que é o que queremos. Ele recebe dois parametros: previousValue e currentValue
+	- Coloca como os parametros total e current (valor atual em portugues)
+	- Se o current (atual) for true, retorno total + current (ou poderia ser total + 1) e se for falso retorna apenas o total. E na funçao do reduce temos um segundo parametro que nesse caso qual que é o valor inicial que no caso é 0.
+
+- Com a função de validaçao pronta nos precisamos aplicar no nivel do Array ja que estamos recebendo um formArray. E por padrão vai ser 1, pode ser que vc coloque para que o usuario marque dois ou mais checkboxs.
+
+- Com a validaçao pronta, precisamos modificar o HTML para que faça uso dessa validaçao.
+
+- Caso vc queira começar propria biblioteca, pode criar em shared um "form-validations.ts". Pode fazer com que essa classe seja um serviço e injetar essa classe em cada componente que for utilizar ou então pode fazer com que os métodos sejam estáticos. Quando um método é estático vc tem apenas 1 instancia para cada chamada, como se fosse um codigo compartilhado.
+
+
+#Curso Angular #109: Formulários reativos: Validação Customizada (CEP)
+- Essa mesma maneira de fazer validação pode utilizar também para outros campos comuns como CPF e CNPJ, basta aplicar a lógica aplicada pra cada um dos casos.
+
+- Se o campo estiver vázio ou nulo nem precisamos mostrar que o CEP é inválido, pois essa parte de validação é responsável pela validação required.
+
+- O nome do nosso erro vai ser chamado cepInvalido.
+
+- Como não estamos passando nenhum parâmetro extra não precisa chamar a função  FormValidations.cepValidator(), pra mostrar também a diferença dos tipos de validações. Como não temos um parâmetro extra pode apenas chamar o FormValidations.cepValidator sem explicitamente passar os parenteses. É por isso também que o Validators.required não precisa do parênteses.
+
+- Após digitar 'rrrr' no campo CEP e ver no console os errors do control cep, aparecerá "cepInvalido: true". 
+
+
+#Curso Angular #110: Formulários reativos: Validação entre dois campos (confirmar email)
+- Vamos comparar valores de dois campos. Nos vamos criar um campo de confirmaçao de email e essa mesma logica pode ser utilizada para confirmaçao de senha tambem
+
+- O que queremos fazer é que, quando a gente entrar com email@email.com e se colocar um email2@email.com mostre uma mensagem de erro falando que os dois campos sao diferentes. E para isso será necessario uma validaçao customizada.
+
+- Como aqui nos estamos utilizando um parametro que nao seja um controle do formulario, nos vamos ter que utilizar a mesma estrategia do requiredMinCheckbox, ficando:
+	>>	const validator = (formControl: FormControl) => {
+     	};
+      	return validator;
+
+- Não vamos receber um formArray, mas sim um formControl (visto que o campo email é um formControl). Primeira coisa que vamos validar é se esse campo foi passado realmente.
+
+- Depois vou tentar acessar esse campo que o desenvolvedor informou. Para acessar esse campo, temos o formControl, e como vimos tem alguns propriedades(retângulo azul) e m[etodos(cubo lilas)
+
+- Tem a propriedade parent: faz o acesso ao controle pai ou mae desse campo.
+
+-Porém tem a propriedade root. O parent do campo CEP é o endereço que é o formGroup propriamente. Porém a propriedade root, ou seja a propriedade raiz do CEP, vai retornar o formGroup inteiro que é a raiz do formulário. Então para nao ter risco vamos acessar o formulario raiz para ter acesso a qualquer campo do formulario.
+
+- Caso a gente precise acessar um campo que esteja aninhado no formulario, pode passar o 'endereco.cep' no parametro otherField
+
+- Se colocar como parâmetro 'email123' dará um erro de "É necessário informar um campa válido" OK!
+
+- Porém, se colocar 'email' (o que seria um campo válido) dará o mesmo erro, e não devia acontecer isso. Isso acontece porque Angular executa essa validaçao desde que o momento que renderiza o campo na tela. Entao, pode ser que no momento que renderiza esse campo o formulario pode nao estar pronto. Entao eh importante mais uma validaçao para evitar erros como esse. Basta fazer isso:
+	>>if (!formControl.root || (<FormGroup>formControl.root).controls) {
+          return null
+    }
+
+- No entanto não precisamos criar a roda, visto que na comunidade ja existe varios pacotes que podemos utilizar nos projetos. o Ng2 validation (um pouco bem popular) tem várias validaçoes ja feitas.
+
+
+#Curso Angular #111: Formulários reativos: Validação Assíncrona
+- Até agora aprendemos diversos tipos de validaçoes, porem elas sao validaçoes sincronas, que sao feitas no lado do frontend. Em alguns cassos pode ser que veriquefemos as informaçoes do back-end, como se um usuario ja existe ou se um email ja existe. Nesses casos precisamos de validaçoes assincronas, pois o frontend vai fazer uma requisiçao no servidor, esperar a resposta e com essa resposta mostrar a validaçao ao usuario.
+
+- Trabalharemos com um arquivo JSON que vai emular um servidor. O que queremos no nosso serviço é verificar se o email que foi passado na chamada existe no backend (no arquivo JSON no caso).
+
+- Para isso, utilziaremos os operadores do rxjs. Para utilziar colocamos um pipe e depois qualquer operador. O primeiro é o map pois estamos interessados apenas nos emails.
+
+- No método metódo se colocamos "map(dados => dados.emails) o TypeScript irá reclamar. Para resolver isso temos duas opções:
+	1) colocar "map((dados: any) => dados.emails)
+	2) ou podemos tipar, dizendo que o objeto que estamos recebendo tem uma propriedade chamada emails e essa propriedade emails é um array de objetos: map((dados: { emails: any}) => dados.emails)
+
+- Agora utilizaremos o tap (que antigamente era o operador "do") para verificar se estamos obtendo a resposta correta.
+
+- Em seguida utilizaremos novamente o map...
+
+- O construtor do formControl aceita um terceiro parâmetro são as validaçoes assincronas. Dai podemos usar o this.validarEmail.
+
+- Voltando pra tela, ao colocar o "q" ainda se faz uma validaçao sincrona. Quando esse campo for um campo valido das validaçoes sincronas eh dai que a validaçao assincrona vai funcionar.
+
+- Dará um erro "Cannot read property 'verificaEmailService' of undefined". Existe um passo extra que temos que fazer porque na hora de executar a validaçao fica uma pouco perdida, entao ele ta tentando executar a validaçao do campo. Porem esse verificaEmailService é um serviço que pertence ao nosso componente, e o Angular vai ficar perdido quanto ao escopo. Para esse error nao acontecer precisaremos associar o escopo da validaçao desse campo com o proprio componente porque assim a funçao validarEmail vai conseguir fazer esse bind (associaçao) e nao tera problema de escopo. Entao faz uma bind com o this que eh referencia ao proprio componente.
+
+- Uma outra forma de fazer isso eh reescrever essa validaçao e receber o serviço, dai nao precisaria fazer esse bind, mas precisaria passar o serviço como parametro (fazendo isso no arquivo form-validations.ts).
+
+- Agora é a hora de tratar as mensagens de erro assincrona. Quando estamos trabalhando com validaçoes assincronas o nosso campo vai ter diferentes status que a gente pode utilizar para mostrar por exemplo mensagens como "validando email", "email valido", "email ja existe".
+
+- Para fazer isso iremos acessar o campo e acessar um atributo chamado status.
+	>> formulario.get('email').status === ''
+
+- O status pode ter valores diferentes.
+	1) O primeiro deles é o PENDING. Ou seja quando nossa validaçao estiver indo pra o servidor e obtendo a resposta do servidor o status vai estar como pending;
+	2) VALID. Para mostrar mensagem de erro válido;
+	3 . Caso queira mostrar uma mensagem de erro de email cadastrado podemos utilizar o a tributo hasError e passar o codigo de validaçao que utilizamos.
+
+- A medida que estamos digitando está fazendo uma requisiçao e isso nao eh o ideal. Para fazer isso utilizamos o operador delay do rxjs
+
+
+#Curso Angular #112: Formulários reativos: Serviço de Mensagens de Erros
+- As vezes pode acontecer de um desenvolvedor esquecer que tem que colocar um "." no final da mensagem. Para o usuário consistência é importante.
+
+- Desenvolveremos um novo tipo de campo-control-error. Criaremos um novo componente e esse componente vai automaticamente mostrar qual que é a mensagem de erro, não precisando passar a frase. O próprio campo através de um serviço vai saber qual mensagem de erro utilizar.
+
+- Iremos mostrar 1 validaçao por vez e se o usuário acertar o campo e tiver outros erros o formulario automaticamente vai mostrar qual que é o proximo erro.
+
+- Em form-validations.ts se criará um outro metódo estático que vai retornar a mensagem de acordo com o erro.
+
+
+#Curso Angular #113: Formulários reativos: Reagindo à mudanças reativamente
+- Aprenderemos porque chamamos os formularios  reativos de reativos. Ou seja, aprenderemos como reagir a mudanças do formulario do Angular de forma reativa, que é o que da nome a esses formularios.
+
+- Quando estamos trabalhando com formularios em JS e precisaremos escutar as mudanças de valores nos campo, nos podemos utilizar os proprios eventos do JS para poder obter esses novos valores. Um exemplo é o evento de input, e como vimos no inicio, é muito utilizado para fazer o two-way-data-binding do Angular por trás dos panos.
+
+- Nos formularios do Angular, principalmente no formulario reativo (trabalhado nas aulas) podemos fazer isso sem utilizar eventos do JS, podemos fazer isso com a propria API do formulario do Angular. É exatamente essa API que deu nome a formulario reativo.
+
+- Podemos escutar evento em qualquer lugar do formlario, preferencialmente dentro do ngOnInit que é a recomendaçao da documentaçao no Angular. 
+
+- Acessando os metodos e propriedades do formulario tem-se duas propriedades:
+	1) status: consegue pegar o status do formulario;
+	2) statusChanges: um observable que emite varios valores a cada mudança de status do formulario. Caso tenha a necessidade de saber quando o status do formulario mude automaticamente talvez na tela queira colocar um check verde ou outra coisa.
+
+- Além do formulario, pode fazer isso a nivel do formulario ou a nivel do controle. O controle pode ser um campo em si (formControl), pode ser o formgroup(caso de endereco) ou um formArray(caso de frameworks).
+
+- Tem tambem o valueChanges, podendo captar cada mudança do valor do formulario. Ai depende do que vc precisa, do formulario em si, do controle, de um array ou etc.
+
+- Vamos fazer a chamda do CEP de maneira reativa. Queremos é apenas chamar o consulta CEP se o nosso campo de CEP for valido.
+
+- Queremos capturar o valor quando for válido, para isso utilziaremos o operador do pipe operators chamado de distinctUntilChanged que tambem pertence ao rxjs. Assim iremos capturar o valor quando ele for modificado de INVALID para VALID. Agora iremos tirar o blur do consultaCEP() pois nao queremos que ele aconteça quando tire o foco, mas sim utilziaremos a parte reativa.
+	>> this.formulario.get('endereco.cep').statusChanges
+      .pipe(
+        distinctUntilChanged(),
+        tap(value => console.log(`Status do CEP: ${value}`))
+      )
+      .subscribe(status => {
+        if (status === 'VALID') {
+          this.cepService.consultaCEP(this.formulario.get('endereco.cep').value)
+          .subscribe( dados => this.populaDadosForm(dados))
+        }
+      });
+
+- No entanto agora temos 2 observables aninhados, podemos melhorar esse codigo ainda mais utilizando um outro operador do rxjs, chamado de switchMap. Ele pega o valor (que aki iremos pegar o valor quando ele for invalido ou valido) e retornar um observable. Caso seja valido retorna um observable do consultaCEP (pois o mesmo retorna um observable que é a chamada HTTP do viaCEP), caso seja invalido retornar um observable vazio empty().
+	>> this.formulario.get('endereco.cep').statusChanges
+      .pipe(
+        distinctUntilChanged(),
+        tap(value => console.log(`Status do CEP: ${value}`)),
+        switchMap(status => status === 'VALID' ?
+          this.cepService.consultaCEP(this.formulario.get('endereco.cep').value)
+          : empty()
+         )
+      )
+      .subscribe(dados => dados ? this.populaDadosForm(dados) : {});
+
+
+#Curso Angular #114: Formulários reativos: Campo input customizado (ControlValueAcessor)
+- Como criar um campo de input costumizado para que possamos reutilizar esse campo em todo nosso projeto.
+
+- O campo formControlName irá sair pois vai ser utilizado na hora de invocar o componente input-field.component.html no data-form.component.html.
+
+- O Angular ainda nao sabe como fazer o link entre o campo do app-input-field com o campo do formulario nome (com o formControlName). Exemplo:
+	>> <app-input-field class="col-sm-12" formControlName="nome"
+    [classeCss]="aplicaCssErro('nome')"
+    id="nome" label="Nome"
+    [control]="$any(formulario.get('nome'))"></app-input-field>
+
+- Dará um erro "No value accessor for form control with name: 'nome". Então como faz para ter esse tal de value acessor?
+
+- O value acessor é uma interface do Angular do pacote de formularios (ControlValueAcessor) e o nosso campo que é o InputFieldComponent vai precisar implementar a interface de ControlValueAcessor. Para transforamr nosso campo em realmente um campo de input HTML para que o Angular possa utilizar.
+
+- Para implementar o ControlValueAccessor é necessário implmenetar 4 métodos.
+	1) writeValue: Responsavel por setar o valor. Quando faz campo.value;
+	2) registerOnChange: Responsavel para falar pra o Angular toda vez que muda (lembrar da aula passada que vimos que cada campo tem o statesChanges e valueChanges);
+	3) registerOnTouched: Responsável para falar ao Angular toda vez que esse campo ganhar foco;
+	4) setDisabledState: Responsável por falar para o Angular quando esse campo está desabilitado que ai o usuário nao vai conseguir inputar nenhum valor.
+
+onChange → a função de retorno de chamada para se registrar na alteração da interface do usuário
+onTouch → a função de retorno de chamada para registrar no elemento touch
+set value(val: any) → define o valor usado pelo ngModel do elemento
+writeValue(value: any) → Isto irá escrever o valor para a visão se as mudanças de valor ocorrerem no modelo programaticamente
+registerOnChange(fn: any) → Quando o valor na interface do usuário for alterado, este método invocará uma função de retorno de chamada
+registerOnTouch(fn: any) → Quando o elemento for tocado, este método será chamado
+
+1) writeValue
+	- Para isso criaremos o innerValue, get value() e set value();
+
+	- vamos ter que sempre falar para o Angular quando o valor mudar, e se o valor for o mesmo não tem pra que disparar o evento de que o valor mudou.
+
+	- Agora o último passo que é realmente transformar isso em um campo de input de formulário. O Angular tem um token em específico que é o ngValueAcessor que é o que vai transformar o nosso componente em um campo de input. Para fazer isso, precisa colocar no providers qual que é o providers do ngValueAcessor.
+
+	- Para facilitar será declarado uma constante INPUT_FIELD_VALUE_aCESSOR.
+
+- Na próxima aula nós vamos criar uma classe utilitária para utilizar em todos os formulários e consertar a parte da mensagem de validação.
+
+
+#Curso Angular #115: Formulários reativos: Classe base para Forms (herança no Angular)
+- Vamos criar uma classe base para poder utilizar em todos os formularios da aplicaçao.
+
+- Varios dos metodos que desenvolvemos ao decorrer das aulas de formularios sao metodos que podemos reutilizar em varios formularios. Em um projeto real existem varios formularios, e será muito cansativo repetir todos os codigos, alem de ser benefico pela manuntençao ser mais facil.
+
+- Ate aqui so usamos a composiçao, mas agora utilizaremos o conceito de herença. O componente nao vai ter nenhum template, pois no Angular nao consegue ter herença da parte do HTML, apenas a herança da parte da classe em si do componente, do TypeScript.
+
+- Nesse caso, criaremos uma classe e ela não precisa necessariamente do decorator component, já que ele é uma classe comum do TypeScript. No entnato, é recomendado usar esse decorator Component caso vá utilizar algum ciclo de vida como ngOnInit, ngOnDestroy, etc.
+
+- Ao colocar a herança do novo componente denominado base-form-component.ts no componente data-form.component.ts, é necessário colocar no constructor chamar o super, isto é, o constructor da classe mãe que é o base-form-component.ts. Ficaria assim:
+	>> export class DataFormComponent extends BaseFormComponent implements OnInit {...}
+
+
+#Curso Angular #116: Formulários reativos: Combobox aninhado: Estado + Cidade
+- Vamos fazer um exemplo mais avançado com combox aninhado. Isto é, teremos um combobox de cidades e sempre que selecionar um Estado iremos listar as cidades que pertencem ao estado no combobox de cidade.
+
+- Tem duas maneiras, e usaremos a primeira já que nao temos backend:
+	1) Carrega todas as cidades e faz o filtro localmente, para poder mostrar somente as cidades do Estado que foi selecionado.
+	2) Ou poderia ter um endpoint no backend onde poderia passar qual que é o Estado e o backend retorna a lista de cidades que pertence ao estado.
+
+- Será criado uma interface Cidade com os atributos das cidades que são id, nome e estado. Além disso no dropdown.service será criado um método chamado getCidades que recebe 1 parâmetro que é o idEstado para que retorne apenas as cidades do respectivo Estado passado na função.
+
+- Então toda vez que selecionar um novo Estado, nós queremos listar apenas as cidades que pertencem a esse Estado. Além disso cidades não sera mais um campo livre, mas sim um combobox.
+
+- Quando criamos o getEstadosBr nós ja estamos utilizando com pipe async no nosso formulario. Para que não nos inscrevemos duas vezes no mesmo Observable iremos retirar o async do template e voltar com a forma antiga:
+	>> De: estados: Observable<EstadoBr[]>;
+	>> Para: estados: EstadoBr[];
+
+OBS: Porém, lembre-se da  recomendaçao que sempre que possivel utilizar o pipe async, mas como não queremos se inscrever duas vezes no mesmo observable, voltaremos para a forma antiga.
+
+- Utilizaremos o switchMap porque agora vamos chamar dropdownService.getCidades. Vamos parar a execuçao desse Observable e trocar por um troco, por isso utilizamos o switch que é uma troca.
+
+- Próximo passo é transformar o campo cidades em combobox.

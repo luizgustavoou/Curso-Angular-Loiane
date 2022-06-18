@@ -1,0 +1,390 @@
+SPA (Single Page Apllications) ou projetos que tem apenas uma página
+
+
+Instalar Angular Materialize
+>> npm install materialize-css --save
+>> npm install angular2-materialize --save
+
+>>npm install jquery@^2.2.4 --save
+>>npm install hammerjs --save
+
+Go to section apps and find styles array inside it (with only styles.css value by default), add the following line inside array before any styles:
+  "node_modules/materialize-css/dist/css/materialize.css"
+
+Go to section apps and find scripts array inside it, and add the following lines inside array
+  "node_modules/jquery/dist/jquery.js",
+  "node_modules/hammerjs/hammer.js",
+  "node_modules/materialize-css/dist/js/materialize.js"
+
+Add to the top of app.module.ts
+	import { MaterializeModule } from 'angular2-materialize';
+
+
+Add this line to header of index.html
+
+<link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+
+#Curso Angular #53: Rotas: Definindo e extraindo parâmetros de roteamento
+- Colocar um outro caminho que suporte um ID. Por exemplo: curso/id
+- Quando quer passar parametros para as rotas, colocamos a rota e passamos tambem o barra e o nome do parametro
+- Para indicar que é um parametro usamos ":"
+
+- Exemplo: 'curso/:id'
+
+- Podemos usar o routerLink com propety bind para passamos valores dinamicos e nao apenas informaçoes estaticas.
+
+- [routerLink]="['curso', idCurso.value] nesse caso o routerLink recebe um array de parametros. O primeiro valor vai ser o nome da rota e em seguida a gente passa os parametros (Como login, cursos e curso/id são rotas raiz do projeto, a "/" barra é opcional)
+
+- O próximo passo é obter o parâmetro no componente CursoDetalhe
+
+- Existe uma classe do Angular 2 chamado ActivatedRoute (Rota ativa) que podemos injetar no constructor para poder obter os detalhes da rota, como exemplo os parametros da rota
+
+- Snapshot é como se fosse uma foto desse exato momento da rota, e dentro do dele tem os params, com o id
+
+- o objeto com parametros é dinamico, e o id nem sempre vai ser um atributo desse objeti
+
+#Curso Angular #54: Rotas: Escutando mudanças nos parâmetros de roteamento
+- Atributo params que é do tipo BehaviorSubject
+- Essa classe BehaviorSubject é do axjs que significa que é um valor que pode mudar com o tempo.
+- Assim, o valor do parâmetro automaticamente irá mudando.
+- Por questões de boa prática, esse this.route.params é do tipo inscrição Subscription, que é do pacote axjs
+- Ou seja, toda vez que faz uma inscrição, mesmo depois desse objeto dessa classe ser destruida, essa inscriçao pode continuar viva, e nao tem interesse de continuar viva depois do componente ser destruida. Para isso utilizar o comando:
+      ngOnDestroy() {
+        this.inscricao.unsubscribe();
+      }
+
+
+#Curso Angular #55: Rotas Imperativas: Redirecionamento via código
+- Classe do tipo router que é injetada no constructor, classe responsável pelos métodos que conseguem fazer um redirecionamento
+
+
+#Curso Angular #56: Rotas: Definindo e extraindo parâmetros de url (query)
+- Em um caso que se tem 1000 cursos, você não quer mostrar todos os curso na tela, que mostrar de 50 em 50. Para isso existe o QUERY PARAMS 
+
+- QUERY PARMS trata-se de parâmetro do próprio link da URL. Também é uma forma de passar parametros opcionais para as rotas no Angular 2
+
+- Poderiámos passar na url o número da página, como por exemplo:
+    >> http://localhost:4200/cursos?pagina=2
+-
+
+- Para passar um QUERY PARAMS existe uma outra diretiva chamada [queryParams] e passar o objeto. Exemplo:
+    >> [queryParams]="{pagina:1}"
+
+- Podemos extrair essa informação da rota para também fazer algo com isso. Para extrair é de uma maneira similar com os parâmetros de rota.
+
+- Lembrando das boas práticas, esse queryParams também é um BehaviorSubject, ou seja, ele também retorna uma inscrição. E para seguir as boas práticas, cria-se um objeto inscrição (do tipo Subscription) e cria um ngOnDestro() para se desinscrever.
+
+
+#Curso Angular #57: Rotas: Criando um módulo de rotas
+- Criar um módulo de rotas para organizar melhor as rotas do projeto.
+
+- Até agora o que temos de rota no nosso projeto é um arquivo que nós chamamos de app.routing.ts, onde tem todas as rotas declaradas no projeto
+
+- A segunda forma de organizamos essa rota: que no lugar de ter uma constante, ter também um outro módulo que vai ser decorada com ngModule para as rotas
+
+- A idéia é que tenha todo o projeto organizado em módulos
+
+
+#Curso Angular #58: Criando um módulo de funcionalidade
+- O app.module está começando a crescer junto com o projeto. Ficando muito grande. Então teremos que refatorar o projeto para organizar melhor, e preparar para que ele possa receber novos componentes e módulos
+
+- Em um projeto, é normal ter por exemplo, um módulo de cursos, página de login, pode ser que tenha módulo de alunos, módulo de vendas,... Se colocar tudo do app.module ele ficará ilegível!
+
+- Depois de ter colocado curso-detalhe e curso-nao-encontrado dentro da pasta cursos, será feito o módulo de funcionalidade.
+
+- Para isso será criado um módulo funcional chamado "cursos.module.ts" onde terá em declarations o "CursosComponent", "CursoDetalheComponent" e CursoNaoEncontradoComponent. Já em providers terá o serviço "CursosService". (nesse caso não precisa por ele tem uma configuração providedIn: 'root' )
+
+- Outra coisa importante é que, para um módulo de funcionalidade, nos imports precisa botar os import do próprio Angular 2: Lembrar que não é possível utilizar BrowserModule dentro de um módulo de funcionalidade
+
+//*OBSERVAÇÃO
+- CommomModule faz parte do pacote @angular/common e tem as diretivas ngif, ngfor, diretivas de validação e etc... 
+- FormsModule: utilizar as diretivas de formulário
+- HtppModule: utilizar  chamadas AJAX, utilizar o objeto http
+//
+
+- Agora ir no app.module e remover tudo que não precisa.
+
+- Dará um erro do tipo "NG8002: Can't bind to 'routerLink' since it isn't a known property of 'a'.". Isso se dá porque no "cursos.component.html" há a presença de uma diretiva do routerLink. Para resolver isso, em cursos.module.ts, em imports, coloque o módulo RouterModule, para que essa diretiva fique disponível aos todos componentes do cursos.module.
+
+
+#Curso Angular #59: Rotas: Criando um módulo de rotas de funcionalidad
+- A ideia da aula de hoje é refatorar o "app.routing.module" a fim de ficar menor e conter apenas as rotas principais da aplicação.
+
+- As rotas 'cursos', 'curso/:id', 'naoEncontrado' serão passadas para um outro arquivo de rotas que fica dentro do diretório cursos.
+
+- Por se tratar de uma rota de funcionalidade, não se utiliza "RouterModule.forRoot" mas sim "RouterModule.forChild".
+
+- Agora que na rota de funcionalidade tem exportação da biblioteca RouterModule, não precisa mais importar essa biblioteca no módulo de funcionalidade "cursos.module.ts".
+
+
+#Curso Angular #60: Rotas Filhas
+- Ao criar o componente principal, já cria o seu módulo.
+
+- Ao colocar na url "http://localhost:4200/alunos/novo" não foi para o componente "aluno-form", mas sim para o componente "aluno-detalhe". Isso se deu por causa de uma colisão de rotas. Porque colocou-se "{ path: 'alunos/:id', component:  AlunoDetalheComponent}" passando um parametro, e esse parametro é dinamico e pode ser qualquer coisa. O "{ path: 'alunos/novo', component: AlunoFormComponent}" precisa ser avaliado primeiro então tudo que for hardcode precisa ser avaliado primeiro
+
+- Exemplo: Se digitar "alunos/1" na url o Angular verificará:
+    'alunos' não é
+    'alunos/novo' não é
+    'alunos/:id' é
+
+- Sempre está repetindo 'aluno/...' nas rotas, e podemos evitar essa repetição declarando com rotas filhas.
+
+- Outro motivo para utilizar rotas filhas no lugar de rotas comuns é que sempre vai ter 1 componente renderizado nas rotas comuns. As rotas filhas permitem que um componente pai e um componente filho seja renderizado juntos ao mesmo tempo na tela.
+
+
+#Curso Angular #61: Rotas Filhas: desenvolvendo as telas
+- Por se tratar de rota filha não precisa passar o '/alunos' como:
+    [routerLink]="['/alunos', aluno.id]"
+
+- Pode passar diretamente o id do aluno:
+    [routerLink]="[aluno.id]"
+
+- Como está tudo em uma div com classe 'container', tudo está sobre uma grid. (isso no app.component.html) 
+
+- A implementação da interface é apenas uma boa prática para deixar claro que está implementando o onInit e o onDestroy, como:
+    export class AlunoDetalheComponent implements OnInit, OnDestroy{ ... }
+
+- O que Loiane não gostou das Rotas no Angular: Na lista de alunos já recebemos todas as info dos alunos (id, nome e email) quando queremos passar as info para o componente do detalhe do aluno a gente so passa o id do aluno na rota, e nao o objeto aluno completo na rota dele. Assim como no botao editar que so iremos passar o id. Entao tem que obter o id, ter que ir no serviço e buscar as informaçoes do aluno, o que é ruim!
+
+- Resumindo: Angular não permite que passemos objetos para as Rotas
+
+
+#Curso Angular #62: Rotas: Dica de Performance: Carregamento sob demanda (lazy loading)
+- Como carregar módulos ou rotas sob demanda no Angular 2 com o lazy loading.
+
+- A aba de Network poderá visualizar todos os arquivos carregados para o build de desenvolvimento... main.bundle.js o arquivo onde tem todo o código da aplicação desenvolvida.
+
+- Em uma aplicação de verdade provavelmente mostrará a página de login primeiro.
+
+- Também é questão de segurança: Se tiver pagina de login, so precisaria do codigo da pagina de login, e nao do codigo de cursos, alunos e o resto da aplicaçao.
+
+- O que pode ser feito é a configuraçao para carregar os modulos sob demanda.
+
+- Em loadChildren colocar o caminho completo do cursos.module. Além disso precisa colocar #<nomedaclasse> que é CursosModule 
+
+- Quando utiliza o lazy loading não podemos ter o import desse CursosModule em mais nenhum outro lugar da aplicação. E nesse caso está usando o import dentro do app.module.ts. Então delete ou comente, assim como o import
+
+- Delete a declaração dos imports e delete o próprio import da classe no app.module.ts. Dentro do cursos.routing remover o cursos do path
+
+- Como já tem o caminho principal para o loadChildren, dentro do cursos.routing remover o 'cursos' no path.
+
+- Ao clicar em cursos, carrega o modulo de cursos. Na aba de rede, network, tem um 0.chunk.js que é um pedaço de script somente com o codigo de cursos.
+
+- O.chunk.js para cursos e 1.chunk.js pois foi o primeiro e segundo na ordem.
+
+- Terá um problema com a parte de cursos.
+
+- Sempre que utilizar lazy lodiang as rotas tem que manterem um padrao, da mesma forma que mantem um padrao em alunos. Em ta tudo misturado
+
+
+#Curso Angular #63: Rotas: Tela de Login e como não mostrar o Menu (NavBar)
+- Javascript não é uma linguagem tipada. (declarar o tipo da variável)
+
+- Precisa criar uma classe Usuário. Pode ser export class ou export interface
+
+- Quando está na tela de login tem-se o menu, e não é algo que quer se mostrar pra um usuário que não está logado. De uma forma simples (ao invés de passar todo o conteúdo do app component para uma rota filha) poderia fazer:
+    Verificar se o usuário está autenticado ou não e colocar um ngif no cabeçalho. Iremos emitir eventos através do EventEMitter, na aula 41.
+
+
+#Curso Angular #64: Usando Guarda de Rotas: CanActivate
+- Guarda de rota é um tipo de serviço especial que implementa um determinado método, que o Angular sabe que quando essa classe implementa esse método, esse método pode ser implementado como guarda de rota.
+
+- Classe que tem um decorador Injectable que implementa a interface CanActivate e quer vai ter o método também CanActivate. Além disso recebe a rota em si (route: ActivatedRouteSnapshot), o estado da rota (state: RouteStateSnapshot) e dentro dele pode colocar a lógica.
+
+- Pode aplicar esse canActivate a todas as rotas que vc nao quiser que o usuario acesse sem estar logado. A única rota que nao precisará disso é o login component
+
+
+#Curso Angular #65: Usando Guarda de Rotas: CanActivateChild
+- Guarda de rotas para rotas filhas. Veremos que CanActivateChild é muito similar e dois lugares onde pode utilizar.
+
+- A diferença é que um vê a rota base do módulo, e o outro verifica as rotas filhas.
+
+- Como podemos fazer essa verificação que vale para guarda de rotas tanto para guarda de rotas filhas. Tanto o canActivate e canActivateChild recebe dois parâmetros: route (cópia, foto, snapshot da rota ativada) e state (estado dessa rota). 
+
+- Quando estiver desenvolvendo o projeto, pode criar um guarda de rotas filhas genérico (que pode fazer verificação no servidor) ou criar um específico para cada módulo do projeto.
+
+- Exemplos: Alunos pode editar, em cursos poderia fazer uma espécie de crud para fazer a verificação. Nem sempre em um projeto o usuario poderá fazer tudo, ás vezes se for um usuário apenas de acesso a leitura dos dados da aplicação, esse usuário não vai poder editar. Então podemos usar o guarda de rotas filha para fazer essa verificação.
+
+- Dar um console log no route e state para vefificar o objeto e ver se tem alguma informação nesse objeto que podemos utilizar.
+
+- ActivatedRouteSnapshot tem o component (nesse caso como é o '/alunos', o componente dele é AlunosComponent), tem os dados (data) desse objeto, os parametros, queryparams, url em array(nesse caso a url nao tem nada pois se esta pegando a linha '')
+
+- No RouterStateSnapshot tem o _root: Treenode que é a arvore das rotas e a url completa.
+
+- Duas opções de verificação:
+    >> Se esse array de url (em ActivatedRouteSnapshot) tiver um segmento cujo path é "editar", verifico se esse usuário tem acesso ou nao.
+    >> Ou ir em RouterStateSnapshot e pegar o link completo.
+
+- Esses dois objetos da muita informação para verificar se o usuário tem acesso ou não.
+
+- LEMBRAR QUE PODE USAR ESSES 2 OBJETOS TANTO EM GUARDA DE ROTAS OU GUARDA DE ROTAS FILHAS.
+
+- Tanto no canActivate e canActivateChild tem-se dois tipos de retorno:
+    1) Observable de um boolean (Observable<boolean>)
+    2) Um boolean
+
+- Poderia injetar um serviço nessa guarda de rota filha, como no auth.guard.ts, chamar esse serviço e esse serviço vai até o servidor. (passa o usuário logado, algum código para poder identificar essa rota e lá no servidor verificar se esse usuário tem acesso ou não)
+
+- Com o retorno de Observable de um boolean o Angular já sabe que vc fez uma chamada assincrona (AJAX), foi ate o servidor e verificou.
+
+- return Observable.of(false); nesse caso já é rapido o retorno pois o valor ja esta colocado. (isso já é um chamada assincrona, retornando um valor assincrono do falso. Mais pra frente tera um modulo para chamadas HTTP, chamadas ajax ao servidor, promisses e observable)
+
+- Segunda questão dessa aula é o local, pode-se ver que ess alunos está sendo chamado sempre que acessa. Já no "http://localhost:4200/alunos" já chama a guarda de rota filha.
+
+- Agora, como acontece se quisermos colocar isso num lugar diferente? Por exemplo, na sua aplicação voce nao quer deixar esse alunos.guard (já que é uma coisa bem especifica para esse modulo). Passar esse guarda de rota para dentro do modulo de alunos, dentro do alunos.routing.module.
+
+- Pode-se ver que para o componente principal (AlunosComponent) foi utilizado somente o canActivate[AuthGuard]. O canActivateChild[AlunosGuard] não foi chamado. Mas se renderizar o componente do AlunoDetalheComponent, que faz parte da rota filha, será ocorrido a verificação do canActivateChild[AlunosGuard].
+
+- Dependendo de onde vc queira que o  guarda de rota seja executado, para todas as rotas incluindo o componente pai vc declara no app-routing.module.ts. Se vc quer apenas para as rotas filhas e nao incluir o componente pai, entao vc coloca esse atributo dentro do modulo de rotas do modulo funcional.
+
+
+#Curso Angular #66: Usando Guarda de Rotas: CanDeactivate
+- CanDeactivate é uma guarda de rota para verificar se o usuário pode desativar aquela rota.
+
+- Nas aulas anteriores aprendemos sobre guarda de rotas para ativar a rota. Aprendeu como verificar se o usuário está logado e maneiras de verificação de permissão se um usuário pode ou não acessar uma determinada rota filha.
+
+- Agora veremos como verificar se o usuário pode desativar uma rota ou não. (o cenário a desenvolver é em relação ao formulário)
+
+- Primeiro cenário: Em um contexto de formulário onde você altera algum input e clica em um outro link (mudar a rota) é legal perguntar ao usuário se ele quer realmente sair do formulário e perder as mudanças feitas.
+
+- Segunda cenário: Você faz uma requisição ao servidor, seja com dados do formulário ou seja com informações que vc quer salvar ou enviar ao servidor, e por algum motivo da um erro no servidor (uma execessão). Caso já tenha mudado a pagina novamente, ou seja ja tenha mudada a rota, fica mais complicado de tentar rerveter a sitauçaõ ou dar a chance pro usuario fazer a requisiçao de novo (para clicar no botao submit de novo.)
+
+- "...export class AlunosDeactivateGuard implements CanDeactivate<AlunoFormComponent> { }"
+
+- Esse CanDeactivate tem um sinal de menor e maior. No JAVA é chamado de operador de diamante (diamond) e dentro desse operador passa o tipo da classe. Para esse caso do Angular, para essa interface precisa especificar qual que é o componente que a gente ta tentando desativar. No nosso caso, no alunos-routing.module.ts, iremos aplicar para o AlunoFormComponent (implementar um guarda de desativação de rotas para os caminhos que o AlunoFormComponent)
+
+- O método que irá fazer a verificação, se pode desativar ou não a rota, também recebe 2 parâmetros trabalhados nas últimas aulas e mais 1 novo, que é:
+    1. route: ActivatedRiyteSnapshot (que é a copia da rota)
+    2. state: RouterSateSnapshot (que é o estado da rota)
+    3. component: Essa especificação de componente em "...implements CanDeactivate<AlunoFormComponent>" permite que passe o componente diretamente, permitindo o acesso ao próprio componente, permitindo chamar método e etc.
+
+
+#Curso Angular #67: Usando Guarda de Rotas: CanDeactivate com Interface Genérica
+- Continuaremos a mexer em guardas de desativação de rotas, mas de forma mais genérica para poder reutilizar esse guarda de rotas em vários componentes através de uma funcionalidade do typescript que são as interfaces.
+
+- O AlunosDeactivateGuard só irá funcionar com o AlunoFormComponent. Imagine agora se tivessemos varios formularios com essa mesma necessidade de ter um metodo e pedir a confirmação de saida da rota.
+
+- Como faz para poder reutilizar um guarda de rota como esse de forma mais generica? Ai que entra  a funcionalidade das interfaces que é um conceito da OO (Orientaçao a Objetos) e nao tem no Javascript e nem na ECMAScript, porem tem no Typescript. (Lembrando que se vc for um desenvolver C# ou Java é o mesmo conceito que se utiliza nessas linguagens e em outras linguagens orientada a objetos)
+
+- Uma interface é uma especie de classe so que ela nao tem a implementaçao (a gente nao coloca a logica na interface), mas apenas vai definir qual é o comportamento daquela interface, ou seja, quais sao os metodos que as classes que forem implementar a interface vao precisar ter tambem no seu corpo.
+
+- Ao se criar um arquivo typescript com uma interface, normalmente nas linguagens Java se coloca a letra "I" no inicio do nome do arquivo, como "Iform-candeactivate.ts"
+
+- Ao colocar "...export class AlunosDeactivateGuard implements CanDeactivate<IFormCanDeactivate>" agora quer dizer que é um tipo genérico porque é uma interface, com isso todas as classes do nosso projeto que implementarem essa interface, vão ter esse método podeDesativar();, podendo utilizar isso em vários formulários e em várias classes.
+
+- Observa que agora, no arquivo "alunos-deactivate.guard.ts" não poderá mais acessar o método "podeMudarRota();" porque esse método não existe na interface (no arquivo "Iform-candeactivate.ts"), apenas o método podeDesativar();
+
+- Ok. Mas agora no nosso projeto ainda não tem nenhuma classe que implmenta essa interface. Entao voltaremos no "aluno-form.component.ts" (e em todos os formulários que quisesemos) e adicionar a interface IFormCanDeactivate.
+
+- Irá dar um erro de compilação no "aluno-form.component.ts" pois precisa implementar nessa classe o método podeDesativar();
+
+- Com essa funcionalidade, cada formulário poderá ter sua lógica específica. Se aquele formulário ou aquela classe pode ser desativada ou não para uma determinada rota.
+
+- Se quiser reutilizar esse guarda de rota "alunos-deactivate.guard.ts", é so em todas as classes colocar o IFormCanDeactivate e no arquivo de rotas colocar canDeactivate: [AlunosDeactivateGuard]
+
+
+#Curso Angular #68: Guarda de Rotas: Resolve: carregando dados antes da rota ser ativa
+- Iremos aprender sobre o guarda de rota Resolve que é responsável por carregar dados antes da rota ser ativada.
+
+- O carregamento da informação do objeto aluno só acontece depois que o componente AlunoDetalheComponent é renderizado, chamado pela rota que tenha o id "...{path: 'id', component: AlunoDetalheComponent}.
+
+- Em alguns casos o tempo que demora pra carregar a informação pode ser bem sensível ao projeto. Pode ser que tenha necessidade de carregar a informação do aluno antes do componente ser criado, inicializado e renderizado na tela. Por esse motivo o Angular tem o guarda de rota, que é o Resolve, para poder carregar essas informações antes do componente ser criado.
+
+- Nessa aula será modificado o código do aluno-detalhe.component.ts. Para que o objeto aluno seja carregado no serviço antes que esse componente seja criado.
+
+- Normalmente se nomeia as guardas de rotas Resolve, que vão obter uma informação antes do componente ser criado. (exemplo: "aluno-detalhe.resolver.ts)
+
+- Essa guarda de rota do Resolve é muito parecida com as guardas de rotas que já vimos no curso. Sempre tem uma interface que pode ser implementada e  sempre um método que precisa implementar, esse métodovai receber os dois parâmetros route e state.
+
+- A interface do Resolve "... implements Resolve<Team>" recebe um tipo genérico. O team é o tipo do objeto que será resolvido. E nesse caso estamos tentando resolver o tipo aluno "aluno: any"
+
+- O aluno está do tipo any. No entanto, podemos usar uma funcionalidade do Typescript que é criar os nossos próprios tipos de objetos. Funciona da mesma forma que estivermos criando uma nova classe. (Brunão sempre fazia isso!)
+
+- No Resolve colocar ".... implements Resolve<Aluno>" sendo Aluno a classe que criamos para tipar. Dessa forma o Resolve irá tentar carregar um objeto do tipo Aluno. 
+
+- Nós iremos passar a lógica do aluno-detalhe.compoment.ts, de pegar o parâmetro da rota e carregar o aluno do serviço para essa classe Resolve.
+
+- Agora precisamos informar a rota que estamos "resolvendo" o objeto Aluno antes de carregar o próprio componente. Na rota alunos-routing.module.ts iremos adicionar um atributo resolve que recebe um objeto (no caso Aluno) no AlunoDetalheComponent. Pode dar o nome que quiser, ele vai ser o parâmetro que vai ser passado para as informações da rota que vamos carregar posteriomente no AlunoDetalheComponent.
+
+- Em aluno-detalhe.component.ts no lugar de acessar os parâmetros do activatedRoute, iremos usar o atributo data, que são os dados fornecidos. E fazer um subscribe, pois ele retorna um Observable.
+
+- A grande diferença de utilizar esse guarda de rota resolver ou não, é que quando o componente é inicializado nós ja recebemos o objeto pronto porque o objeto já foi carregado nesse guarda de rota resolver. 
+
+- A diferença é que antes só fazia o guarda de rota filha e em seguida já inicializava o componente e depois que o componente era inicializado a gente ia no serviço e pedia para carregar.
+
+- Agora, nesse caso, as informações já estão na memória e isso é muito rapido, porem isso da muita diferença quando se esta trabalhando com requisiçoes AJAX para o servidor. (tem uma pequena demora de alguns segundos ate que a requisiçao chegue ao servidor, o servidor vai ao banco de dados ou execute uma outra logica e devolva essa informaçao para o Angular)
+
+
+#Curso Angular #69: Usando Guarda de Rotas: CanLoad: como não carregar o módulo sem permissão
+- Aprender como utilizar o último tipo de guarda de rota do Angular, que é o Canload que é uma maneira de nao deixar o usuario carregar um modulo sem permissao.
+
+- Mesmo o usuário sem permissao para carregar aquela rota, o arquivo javascript que tem o codigo do modulo de alunos foi carregado na memoria. E pode ser que voce queira proteger esse codigo e nao deixar o browser fazer o download desse codigo se o usuario nao tiver permissao.
+
+- Nao precisa colocar 1 arquivo para cada tipo de guarda de rota. Se quiser pode reaproveitar uma determinada classe e deixar todo o codigo. Em auth.guard.ts implementa uma nova interface chamada CanLoad
+
+- Vamos ir no arquivo de rotas e colocar em todas as rotas que queremos aplicar essa verificação.
+
+- Pode-se ver na aba de Network que carregou o main.bundle.js (código comum da aplicação) e depois carregou 1.chunk.js com o código do módulo de alunos.
+
+- Depois de dar um enter de novo (refresh) verá que não carregou masis o 1.chunk.js, ou seja, o código do módulo de alunos ou cursos não é mais carregado. 
+
+
+#Curso Angular #70: Definindo rota padrão e wildcard (rota não encontrada)
+- Iremos aprender 2 dicas de configuração de rota, que é definindo uma rota padrão e também wildcard (configurar um componente para rotas nao encontradas)
+
+- Primeiro assunto da aula de hoje é como a gente pode configurar um componente para uma pagina 404, isto é, para uma url nao encontrada.
+
+- Quando nao se configura um componente para um rota nao encontrada, se colocar uma rota nao identificada no projeto. O Angular irá no app.routing.module.ts e vai tentar achar a rota nao encontrada, dando um erro no console. E para os usuarios nao queremos esses erros feios no console.
+
+- Criar um componente pagina-nao-encontrada. Depois disso lembrar das boas praticas de inserir no routing, lembrando sempre a ordem de preferencia para os endereço fixo, isto é, os endereços hardcode.
+
+- É importante declarar o caminho vazio (path: '') e paginas nao encontradas no final do arquivo de rotas.
+
+- Para paginas nao encontradas utiliza-se "{ path: '**' ...}
+
+- O Angular verifica, em ordem:
+    1) {path: 'cursos' ...} : é cursos?
+    2) {path: 'alunos' ...} : é alunos?
+    3) {path: 'login' ...} : é login?
+    4) {path: '' ...} : é a rota vazia?
+    5) {path: '**' ...}  : é qualquer coisa digitada?  vai cair nesse caminho, e nele vai renderizar o PaginaNaoEncontradaComponent
+
+- Segunda dica é trabalhar com uma rota padrão, ou uma rota de redirecionamento. Poderia colocar que o caminho que redireciona o HomeComponent seja home ao invés de vázio{ path: 'home', component: HomeComponet...}
+
+- Porem, quando tenta acessar o vazio '', ira dar uma pagina nao encontrada, entao precisa tambem ter um redirecionamento. 
+
+- Coloque "{ path: '', redirectTo: '/home'}". No entanto se deixar só isso dará um erro no console, com o Angular pedindo colocar como iremos fazer a verificação da rota (pathMatch), se é um 'prefix' ou se é 'full'.
+
+- Nesse caso, como é uma rota vazia vou colocar o pathMatch: 'full', pois está vázia. Nao tem razao colocar esse pathMatch como 'prefix'.
+
+- O pathMach "prefix" é mais indicado quando se está trabalhando com rotas filhas. Quando entra com uma rota para ser validada e verificada pelo Angular, ele vai verificar se a rota que foi entrada precisa ser validada como toda (nesse caso o vazio) entao nao faz sentido usar 'prefix'. Porem quando se esta trabalhando com rotas filhas, como '/team/11/user/jim', o primeiro a ser validado é '/team/:id', e esse é o prefixo da rota, nao a rota inteira (full), apenas o prefixo que é uma parte inicial da rota
+
+- Por padrão as pathMatch das rotas sao 'prefix'.
+
+- É importante fazer isso ao redirecionar rotas de caminho vazio. Caso contrário, como um caminho vazio é um prefixo de qualquer URL, o roteador aplicaria o redirecionamento mesmo ao navegar para o destino de redirecionamento, criando um loop infinito.
+
+
+#Curso Angular #71: Estilo de url: HTML5 ou usando 
+- Aprender como configurar o estilo da rota, se é utilizando as rotas do HTML5 ou usando a hash (#).
+
+- Na maioria das vezes que iremos criar projetos com roteamento a gente tem um hash antes da rota (#).
+
+- Só que no nosso projeto nao temos isso, e esse padrão de nao utilizar a hash é o padrão de roteamento do HTML5.
+
+- Só que enquanto trabalhando na parte de frontend, nenhuma conexao com o backend esta tudo ok. Quando começa a trabalhar com algum backend (Java, PHP, C#, Python, Ruby) pode ser que a linguagem que voce for trabalhar no backend nao aceite esse padrao HTML5 e o container (o servidor da sua aplicaçao) nao va reconhecer o link e nao sabera quando que vc esta tenntando acessar um roteamento ou uma url para poder fazer uma chamada AJAX.
+
+- Por esse motivo o Angular tambem oferece a opçao de a gente poder utilizar a hash (#) no nosso projeto. 
+
+- Para usar a hash, basta ir em app.routing.module.ts e colocar "... imports: [RouterModule.forRoot(routes, {useHash: true})] ..."
+
+- O padrão do Angular é não utilizar a hash (false).
+
+- Assim, todas as rotas que iremos acessar terá uma hash.
+
+
+
+
+
+
+

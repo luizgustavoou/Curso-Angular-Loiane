@@ -1,0 +1,49 @@
+<h5>Exemplos de Pipes</h5>
+<!-- Pipe transforma um valor e a gente pode mostrar esse valor transformado dentro de um template. No Angular 2 temos pipes embutidos: pipe para mostrar data formatada na tela, pipe para formatar um objeto javascript em formato json, pipe para trabalhar com números, pipe para trabalhar com decimais, com moeda, preços,...-->
+
+<!-- Pipe é o próprio caracter | -->
+<!-- Para passar parâmetros no Pipe utiliza-se : -->
+<!-- Para aninhar os Pipes, basta utilizar novamente o | -->
+<!-- Note que todos esses PIPES pertencem ao pacote @angular/common. Portanto, não precisa importar nada no componente e nem dentro do módulo, porque o app.module é o módulo raiz e todos esses pipes estão embutidos dentro do BrowserModule ou CommonModule(caso seja módulo funcional)-->
+
+<p> Título: {{ livro.titulo | uppercase | lowercase | camelCase}}</p> <!-- Transformando em maiúsculo depois em minúsculo. -->
+<p> Estrelas: {{ livro.rating | number:'2.1-2' }}</p> <!-- 2.1-2 significa: 2 para a casa inteira e no mínimo 1 casa decimal e no máximo 2 casa decimal -->
+<p> Páginas: {{ livro.numeroPaginas | number }}</p>
+<p> Preco: {{ livro.preco | currency: 'BRL':'symbol-narrow': '4.2-4'}}</p> <!-- Quer no formato em real e o true ou 'symbol-narrow' signfica que quer o símbolo da moeda, false equivalaria a 'code'.-->
+<p> Data lançamento: {{ livro.dataLancamento | date: 'EEEE, dd-MM-yyyy, h:mm:ss a zzzz ' }}</p>
+<p> Url: {{ livro.url }}</p>
+<br>
+<p> Livro: {{ livro | json}}</p>
+
+<hr>
+
+<input type="text" [(ngModel)]="filtro" >
+<br>
+<input type="text" #novoValor>
+<button (click)="addCurso(novoValor.value)">Add Curso</button>
+
+<!-- Um PIPE puro no Angular 2 não olha as modificações do valor que é passado como parâmetro para o método de transform (o value pode ser qualquer tipo primitivo, e até mesmo um array ou um objeto. E o Pipe Puro não olha as modificações que são feitas nesse objeto.)-->
+<h5>Pipe Puro</h5>
+<ul>
+    <li *ngFor="let liv of livros | filtroArray: filtro" > <!-- Não filtre arrays com Pipe em projetos reais!!!! -->
+        {{  liv }}
+    </li>
+</ul>
+
+<h5>Pipe Impuro</h5>
+<ul>
+    <li *ngFor="let liv of livros | filtroArrayImpuro: filtro" > <!-- Não filtre arrays com Pipe em projetos reais!!!! -->
+        {{  liv }}
+    </li>
+</ul>
+
+<h5>Maneira correta de usar filtro nos projetos</h5>
+<ul>
+    <li *ngFor="let liv of obterCursos()" > <!-- Maneira correta usando método obterCursos() -->
+        {{  liv }}
+    </li>
+</ul>
+
+<p> {{ valorAsync | async }}</p> <!-- Pipe async -->
+<p> {{ valorAsync2 | async }}</p> <!-- Pipe async -->
+

@@ -1,0 +1,746 @@
+#Curso Angular #117: Http / HttpClient: Introdução
+- Aprenderemos alguns tópicos:
+	1) Consumir API REST
+	2) Http GET
+	3) Http POST
+	4) Http PUT
+	5) Http DELETE
+	6) Serviço genérico de CRUD REST
+	7) Pipe Async
+	8) Cacehar dados localmente: Pra não precisar ficar indo no servidor toda hora.
+	9) Unsubscribe automático
+	10) Boas práticas RxJS
+	11) Gerenciar Erros
+	12) Parâmetros GET
+	13) Header do Request
+	14) Interceptors
+	15) Upload Arquivo
+	16) Serviço de Busca/Pesquisa
+	etc..
+
+- Pra gerar um novo projeto:
+	>> ng new requests-http --routing --style=scss -S
+
+- -S para não gerar os arquivos de teste, já que focaremos no HTTP.
+
+
+#Curso Angular #118: Instalando Bootstrap 4
+- Loiane prefere colocar o bootstrap no arquivo styles.scss, colocando:
+    >> @import "~bootstrap/dist/css/bootstrap.css"
+
+- Esse "~" quer dizer que está pegando diretamente do pacote node_modules, sendo a mesma coisa que colocar no angular.json:
+    >> "node_modules/bootstrap/dist/css/bootstrap.css"
+
+- Para a gente trabalhar com Angular e bootstrap não necessariamente precisamos mais do JQUERY. Então, existem bibliotecas como o ngx-bootstrap que da suporte tanto da versão 3 ou 4 do bootstrap e API é bem similar. E o legal dele é que ele tem o Accordion, Modal e etc e não precisa ter a parte do JQUERY, utilizando as tags da biblioteca importando o módulo de modal, similar ao Angular Material.
+
+- Para instalar o ngx-boostrap:
+    >> npm install ngx-bootstrap --save
+
+
+#Curso Angular #119: Http: Simulando Servidor REST (json-server)
+- Iremos aprender como simular um servidor REST através de um pacote npm. Essa dica é válida para qualquer framework de front-end que estiver usando, onde voce precisa simular um backend. Pode ser muito util quando voce estiver esperando o time terminar o backend ou quando voce quer apenas prototipar um projeto para poder mostrar alguma funcionalidade para o cliente.
+
+- Quando trabalha com HTTP precisa mandar as requisiçoes para algum lugar para poder obter, criar, editar ou remover registros. Pode-se usar várias linguagens para se trabalhar com o back-end.
+
+- Iremos simular a parte de BACKEND. O pacote bem popular JSON-SERVER permite através de um arquivo JSON simular os 4 verbos HTTP e ter uma resposta de sucesso sem se preocupar escrever o backend. Para fazer a instalaçao basta colocar:
+	>> npm install -g json-server
+
+- Após criar um arquivo "db.json" pra simular os dados, coloca-se agora no terminal para simular tipo um backend NODE JS:
+	>> json-server --watch db.json
+
+- Com REST podemos fazer as 4 operações de listar, editar, criar e deletar com apenas 1 link, por exemplo "http://localhost:3000/cursos" e utiliza apenas esse link para fazer as 4 operações.
+
+- Para gente testar podemos utilizar programas como Postman e caso nao tenha existe um plugin do VSCODE que se chama REST CLIENT.
+
+- Agora criaremos mais um arquivo chaamdo "exemplo.http" e dentro do VSCODE ja consegue fazer os request e pegar a resposta. No "exemplo.http" pode-se listar, POST, DELETE E PUT.
+
+1) LISTAR TODOS
+	>> http://localhost:3000/cursos
+2) LISTAR APENAS UM
+	>> http://localhost:3000/cursos/2
+3) POST
+	- Para o POST basta colocar:
+	>> POST http://localhost:3000/cursos HTTP/1.1
+content-type: application/json
+		{
+			"nome": "Java"
+		}
+4) PUT
+	>> PUT http://localhost:3000/cursos/2 HTTP/1.1
+content-type: application/json
+		{
+			"nome": "Java OO"
+		}
+
+- PUT é a mesma coisa do DELETE.
+
+
+#Curso Angular #120: Http GET: listar registros
+- Para poder otimizar o building e diminuir o tamanho do bundle, a gente precisa colocar uma configuração no "cursos-lista.componet.ts" para manter o espaço no HTML, colocando:
+	>> preserveWhitespaces: true
+
+- Agora coloque no terminal:
+	>> json-server --watch db.json
+
+- O método request do HTTP é o método que pode especificar qual que é o verbo HTTP a ser utilizado. Nesse caso utilizaremos o GET.
+
+- Outra coisa bacana do HttpClientModule é que, além de não precisar passar para JSON os dados, nós podemos tipar a consulta do GET com uma interface TypeScript. Isso ajudará no intelisense do VSCODE em tempo de desenvolvimento.
+
+
+#Curso Angular #121: Http: Dica: Variável de Ambiente
+- Iremos ver como utilizar a variável de ambiente para poder parametrizar qual que é a URL que vamos utilizar nos requests AJAX.
+
+- Na aula passada foi criada uma variável API onde nos temos o endereço completo do backend. Quando esse projeto for para produção, não iremos acessar o localhost  que é apenas a maquina de desenvolvimento. Ou esse codigo Angular vai ficar no mesmo pacote do backend e não precisaremos do localhost:3000 apenas '/cursos' por exemplo.
+
+- Ou entao acessar uma API remota tambem onde ao inves de localhost passar qual que é o dominio, como:
+	>> 'http://meuprojeto.com/cursos'
+
+- Nao queremos sempre antes de fazer o build de produçao mudar manualmente. Entao pdoemos parametrizar para que o projeto do Angular use um valor na hora de desenvolver e use um outro valor quando for fazer o build de produçao.
+
+- Para isso utilizaremos as variaveis de ambiente. Todo projeto Angular quando cria vem com o diretorio 'environments'.
+
+- Colocaremos em environment.ts:
+	>> API: 'http://localhost:3000/'
+
+- Em produçao vai ser no arquivo environment.prod.ts:
+	>> API: '/'
+
+- Suponhamos que utilizaremos apenas '/' que é vazio. Pode ser um projeto JAVA onde o codigo Angular vai fazer parte do pacote war, pode ser que o build de produçao fique dentro da pasta public de um projeto NODE JS e assim em diante.
+
+- Quando for fazer o build de produçao, no lugar de ficar 'localhost:3000' irá apenas utilizar o '/'.
+
+
+#Curso Angular #122: Http GET + Pipe Async
+- Aprenderemos como utilizar o PIPE async para nao precisar se inscrever manualmente no OBSERVABLE que é retornado pelo http get.
+
+- Toda vez que se inscreve precisa se desinscrever para não consumir memoria sem necessidade, levando problemas de perfomance. Com o PIPE ASYNC deixamos essa parte de gerenciamento de desinscriçao com o Angular.
+
+- Com PIPE ASYNC ele irá chamar o servidor 2x. E isso é ruim. Para arrumar isso no ngif do table:
+	>> De: cursos$ | async; else loading
+	>> Para: cursos$ | async as cursos; else loading
+
+- E no ngFor do tr colocar:
+	>> De: let curso of cursos$ | async
+	>> Para: let curso of cursos
+
+- Sobre banco de dados com Angular: http://expressjs.com/pt-br/guide/database-integration.html#mysql
+
+- Curso NODE JS: https://www.youtube.com/watch?v=qwgDzi8TGco&list=PLb2HQ45KP0WstF2TXsreWRv-WUr5tqzy1
+
+
+#Curso Angular #123: Http + RxJS: Unsubscribe Automático
+- Aprenderemos como fazer o Unsubscribe automático do RJXS caso a gente não consiga utilizar o PIPE ASYNC.
+
+- Nas aulas passadas foi falado que sempre que for possível utilizar o PIPE ASYNC. Porem em alguns casos pode ser que no mesmo componente precise ir em dois lugares diferentes acessar Observable (exemplo feito nas aulas de formulario fazendo o combobox aninhado).
+
+- O ngif quando não mostra (false) acaba destruindo o componente. Entao toda vez que esse mostrarComponentes for falso, vai chamar o ngOnDestroy de cada componente.
+
+- Em "enviar-valor.service.ts" será criado uma variável Observable chamada emissor$ (o $ é por ser um Observable). Instanciaremos um novo Observable, e pode utilizar esse tipo de lógica para qualquer informaçao que queira compartilhar de forma global na aplicaçao, como por exemplo se o usuario esta logado ou nao.
+
+- Para isso será utilizado o Subject que é como se fosse o emissor do RXJS, e existem varios tipos de sujeitos mas sera utilizado o basico que é o Subject mesmo.
+
+- Para emitir um novo valor usa-se o método next:
+	>> this.emissor$.next(valor);
+
+- Para retornar o emissor como Observable usa o método asObservable():
+	>> return this.emissor$.asObservable();
+
+- Agora, em "unsubscribe-poc.component.ts" será coloca o metódo do serviço. No entanto, se apertar no botão "Emitir Valor" acontecerá nada, pois nenhum componente está inscrito ao método do serviço.
+
+- Para isso em "poc.component.ts" será inscrito ao método getValor do serviço, além de criar um ngOnDestroy para avisar quando o componente morreu e isso será feito em todos os componentes take, takeuntil e etc.
+
+1) "poc.component.ts"
+	- Jeito normal de fazer inscrição, porém não terá o unsubscribe.
+2) "poc-async.component.ts"
+	- Não utiliza-se o Subscribe pois utilizará o PIPE ASYNC.
+3) "poc-unsub.component.ts"
+	- Diferença que será criado uma variável sub do tipo Subscription para se desinscrever manualmente;
+	- No ngOnDestroy basta apenas colocar this.sub.unsubscribe();
+	- No entanto, se tiver mais de 1 Subscribe no componente pode fazer um array de Subscription e no ngOnInit colocar this.sub.push(). Já no ngOnDestroy fazer um foreach e nele pegar o elemento e fazer unsubscribe de cada uma;
+	- O problema dessa implementação do unsubscribe manual é que estamos utilizando uma forma imperativa de se desinscrever do Observable, nao estamos utilizando o poder do RXJS e da programaçao reativa que vem junto com RJXS. Entao existe maneira mais elegantes de fazer a mesma coisa sem precisar fazer isso manualmente do push e etc. Existem duas opçoes: takeUntil e take.
+4) "poc-take-until.component.ts"
+	- takeUntil recebe um notificador, ou seja, é também um outro Observable. Entao ficaremos escutando um outro Observable e até ele emitir um valor continuaremos inscritos;
+	- No momento que esse Observable que foi passado pelo takeUntil emitir o valor acaba e se desinscreve automaticamente;
+	- É a soluçao um pouco mais elegante caso vc precise que seu Observable fique vivo durante todo o ciclo de vida do component;
+5) "poc-take.component.ts"
+	- Uma boa maneira de se desinscrever com chamadas HTTP onde a requisiçao envia e recebe, salvando um registro na base de dados. Entao nao tem pra que continuar escutando um REQUEST HTTP se esta apenas fazendo requisiçoes AJAX simples;
+	- Caso o servidor seja reativo estilo NETFLIX, ou seja streaming de dados pro frontend, eh uma outra historia por precisar manter a inscriçao viva durante todo o ciclo de vida do componente e utilizar o takeUntil;
+	- Iremos passar para o take um número de quantas vezes quer receber uma resposta. Para casos onde nao vai tentar novamente utilizamos apenas 1.
+
+- Voltando para tela todos estão recebendo os valores e todos estão sendo destruídos. Porem agora iremos ver o memory leak em ação. Ao destruir o componente e clicar novamente em "Emitir Valor" vemos que o componente sem unsubscribe recebe o valor emitido, ou seja o componente sem unsubscribe mesmo depois de destruido continua escutando por mudanças de valores.
+
+- Imagine numa aplicaçaoa real onde tem varios Componentes e nesses componente tem serviços, varias inscriçoes de Observable e mesmo depois do component a inscriçao continua ativa, tendo problemas de memoria levando a problemas de lentidao e perfomance.
+
+
+#Curso Angular #124: Capturando Erros (+ Erro com async)
+- Aprenderemos como capturar erros de um Observable utilizando o PIPE ASYNC.
+
+- O tratamento de erro utiliznado o operador do RJXS chamado catchError. Esse operador consegue capturar o erro e fazer alguma lógica (mostrar um popup, dar um consolo error) e em seguida a gente precisa tambem precisa retornar um outro Observable.
+
+- No final do catchError precisa retornar um Observable. Pode relançar o erro ou então tratar isso de outra maneira, por exemplo pode retornar um empty() ou retornar o of(). Isso porque no TEMPLATE está consumindo o Observable no ngIf, e se não retorna nada automaticamente vai cair no Else.
+
+- O error$ vai ser um Subject que consegue emitir valores no RXJS.
+
+- Outra forma de tratar os erros com RJXS sem utilizar o PIPE ASYNC, mas com o proprio Subscribe. No Subscribe podemos colocar tres tipos de logica: Sucesso, error e complete. Ou entao, caso vc queira tambem pode colocar um pipe e utilizar qualquer operador do RXJS para manipular os dados, colocando um catchError (se for utilizar o pipe e o catchError tire o error do Subscribe).
+
+- Caso vc queira usar mais de um operadores do RXJS fora o catchError o ideal é deixar ele no final.
+
+
+#Curso Angular #125: Erro Http: Alerta de Erro com Bootstrap
+- Para implementar o alerta em forma de modal, como se fosse um popup, utilizaremos o ngx boostrao.
+
+- A modal do bootstrap tem dependencia com o JQUERY so que nao queremos utilizar o JQUERY no projeto Angular. Por isso utilizaremos o ngx-botstrap pra facilitar nossa vida.
+
+- Precisamos passar para o constructor() do "alert-modal.component.ts" o  BsModalService que seria a referencia da modal do bootstrap.
+
+- Ao dar um ng serve dará um erro pois no "app.module.ts" na parte de imports foi colocado apenas ModalModule. Para que esse ModalModule seja utilizado por todos os módulos colocamos ModalModule.forRoot(), ele tambem vai forncer todas as dependecias internas para que o framework funcione.
+
+- Depois vai dar mais um erro dizendo que nao tem nenhum factory encontrada para o componente AlertModalComponent depois pergunta se adicionou o componente dentro do entryComponents. Qual a diferença desse componente de "alert-modal.component" para o "cursos-lista.component"? Quando está criando componente dentro da aplicaçao sempre ta utilzando esse componente seja numa rota ou dentro de outro componente (como por exemplo pc-asyunc-component).
+
+- Porem o "alert-modal-component" nao esta sendo utilizado dentro de um template. Ele é um componente avaliado, instanciado em tempo de execuçao. E o Angular precisa que vc informe quais sao os componentes que vao ser utilizados em tempo de execuçao. Para fazer isso tem que ir no "shared.module" e colocar entryComponents: [AlertModalComponent]
+
+- No entanto, não precisa mais disso, porque a partir da versão 9 do angular o entryComponents não é mais necessário usar.
+
+
+#Curso Angular #126: Serviço de alerta genérico com Bootstrap 4
+
+
+#Curso Angular #127: Http: Criando formulário para criar e editar cursos
+
+
+#Curso Angular #128: HTTP POST Criando Cursos
+- Para adicionar utilizaremos o POST. O primeiro parametro é a URL para criar, o segundo parametro é o corpo do request (ou seja, o proprio curso que queremos criar)
+
+- Para melhorar na parte de sucesso, além da modal adicionada iremos fazer o location.back() que seria a mesma coisa de clicar no botao de voltar do browser, isto é, vai voltar para a rota anterior que estavamos acessando antes de acessar o formulario. Ou usar um router.navigate para cursos.
+
+
+#Curso Angular #129: Http: Editando Cursos e Observables aninhados
+- Quando clicar no botão de editar iremos modificar a rota da aplicaçao para 'editar/:id'. Ao colocar apenas o exemplo abaixo, dará um erro dizendo que não consegue achar qual que é a rota pois está apenas tentado colocar o 'editar/1':
+	>>   onEdit(id) {
+			this.router.navigate(['editar', id]);
+		}
+
+- Está faltando uma outra configuraçao que vamos passar quais sao as configuraçoes extras. nesse caso iremos passar o relativeTo que é qual que é o link que está rota é relativa, sendo nesse caso o this.route que é a rota que está ativa no momento, sendo do tipo ActivatedRoute.
+	>> constructor(... private route: ActivatedRoute)
+	>> this.router.navigate(['editar', id], { relativeTo: this.route});
+
+- Ou entao poderia passar o caminho completo:
+	>> this.router.navigate(['cursos/editar', id]);
+
+- Ao obter o id do curso no "cursos-form.component.ts" através do serviço ActivatedRoute e seu operador params, precisamos ir no backend e obter o dado que queremos editar.
+
+- Apos isso iremos usar o setValue ou patchValue para atualizar o formulario.
+
+- Algumas pessoas gostam de declarar o input com o ID que fica hidden, mas no caso do Angular nao tem necessidade, desde que esse objeto esteja no formulario do componente, pode ter campos FormControl que estao no formulario mas nao estao no HTML, o inverso nao pode.
+
+- O que nao conseguimos fazer é inicializar o formulario dentro do Subscribe pois o codigo eh um codigo assincrono:
+	>> this.route.params.subscribe(
+      (params: any) => {
+        const id = params['id'];
+        console.log(id);
+        const curso$ = this.service.loadByID(id);
+        curso$.subscribe(curso => {
+          this.updateForm(curso);
+        });
+      }
+    );
+
+- Todo esse acima codigo eh Assincrono, pois se trata de Observable. Entao nao sabemos quando que esse codigo vai ser executado. Para parte de formulario do Angular precisamos inicializar ele ou dentro do constructor ou dentro do ngOnInit do componente.
+
+- Podemos inicializar tudo como nulo e depois podemos fazer um setValue ou patchValue para inicializar os valores.
+
+Abaixo um erro muito comum. Pois nao sabemos q
+	>> let registro = null;
+	this.route.params.subscribe(
+      (params: any) => {
+        const id = params['id'];
+        console.log(id);
+        const curso$ = this.service.loadByID(id);
+        curso$.subscribe(curso => {
+		  registro = curso;
+          this.updateForm(curso);
+        });
+      }
+    );
+	console.log(registro); //null
+
+- Quando inicializa o formulario o resultado do console pode ser que seja nulo pois o codigo console.log(registro) pois a variavel ainda nao tem valor. Porem, o subscribe pode demorar uns milissegundos a mais ate que a variavel registro seja atrbuida a um valor e o console dar um resultado diferente de nulo.
+
+- É importante que qualquer logica que dependa do ID que estamos pegando na rota, vai precisar ser executada dentro desse Subscribe.
+
+- Outra coisa eh que o codigo abaixo está funcionando:
+	>>     this.route.params.subscribe(
+      (params: any) => {
+        const id = params['id'];
+        console.log(id);
+        const curso$ = this.service.loadByID(id);
+        curso$.subscribe(curso => {
+          registro = curso;
+          this.updateForm(curso);
+        });
+      }
+    );
+
+- Porem a gente consegue fazer melhor pois temos um Subscribe aninhados. Agora ficara:
+	>> this.route.params
+    .pipe(
+      map((params: any) => params['id']),
+      switchMap(id => this.service.loadByID(id))
+    )
+    .subscribe(curso => this.updateForm(curso));
+
+- Quando faz o switchMap estamos com o 'editar/1' entao o parametro vai ser 1. Esse rote.params vai continuar sendo observado e caso ele seja por algum motivo modificado para 2 ou 3 a gente vai ter uma outra chamada pra o servidor passando o ID 2 ou 3. Mas como estamos modificando os parametros, se o 3 parametro que recebermos for o valor 3, a gente nao ta mais interessado no valor 1 e 2, quer apenas completar a ultima chamada.
+
+- Entao esse eh um cenario muito comum quando estamos buscar dados no servidor. o switchMap cancela as requisiçoes anteriores e apenas devolve o valor do ultimo pedido.
+
+- Existem outros operadores tambem que eh interessante saber caso vc vai fazer um create, update ou delete. Vc pode usar o concatMap (a ordem da requisiçao importa, ou seja se esta criando 1, depois registro 2 e depois o registro 3, eu quero receber o resultado primeiro do registro 1 para depois receber o resultado do registro 2 e assim em diante.)
+
+- Caso nao se importe com a ordem das respostas que voce vai saber voce pode receber o mergeMap (a ordem nao importa).
+
+- Existe o terceiro tambem que é o exhaustMap (ele vai fazer a requisiçao e obter a resposta antes de partir para uma segunda tentativa. Por exemplo esta fazendo o pedido do primeiro registro, ele vai faz o pedido espera a resposta para depois fazer a requisiçao do segundo pedido, obter resposta e assim em diante.). Sendo muito comum em casos de login.
+
+- Nao fizemos o unsubscribe no route.params pois ele eh uma exceçao. Quando fazemos um Subscribe nele o proprio Angular que vai gerenciar essa inscricao. Por exemplo, Caso clique em cursos e volta pra barra cursos, estamos destruindo a rota 'cursos/editar/1' e com isso o Angular automaticamente faz o unsubscribe, sendo uma rarao execessao que nao precisamos fazer o Unsubscribe manualmente.
+
+
+#Curso Angular: Atualizando projetos Angular v6 para v7 (ng update)
+
+
+#Curso Angular #130: Http: Editando Cursos + Resolver (Rota)
+- Em "curso-resolver.guard.ts" será colocado o of do operador RXJS que retorna um Observable a partir de um objeto para manter a consistencia do codigo.
+
+- Quando a gnte for inicializar o formulario ja iremos ter a variavel curso, entao nao precisamos mais do metodo updateForm. Visto que o curso ja eh carregado antes do componente inicializar.
+
+
+#Curso Angular #131: Http PUT Atualizando Cursos
+- Pode ter campos no formulário e não ter no template HTML, mas o inverso é mentira.
+
+- Dessa forma, temos o campo ID que podemos manipular se estamos criando ou atualizando formulario.
+
+- No PUT precisamos passar algo parecido  com o loadByID. Na API REST precisamos passar o /cursos/id. E o segundo parametro vai ser o corpo, ou seja, o objeto que contem as modificaçoes.
+
+- Agora que o código está funcionando podemos refatorar para deixar mais limpo. Iremos passar a logica se tem ID ou nao, para verificar se precisa salvar ou criar para o serviço "cursos.service.ts".
+
+
+#Curso Angular #132: Http DELETE: Popup de Confirmação para remover Cursos
+- No exemplo do ngx-bootstrap para abrir o popup, com o método onDelete(template) é passado para o método o template diretamente na chamada.
+
+- No entanto, pode fazer a mesma coisa com o viewChild para quando a gente precisa fazer uma referencia para uma variavel no TEMPLATE.
+
+- Além disso no "cursos-lista.component.ts" é passado no método show uma classe para dizer que é um popup pequena, do tipo sm:
+	>> this.deleteModalRef = this.modalService.show(this.deleteModal, {class: 'modal-sm'});
+
+
+#Curso Angular #133: Popup de Confirmação genérica Bootstrap 4 (com RxJS)
+- Ao escrever o código e rodar, veremos que nao ira aparecer o modal. Ao ler o codigo do ngxbootstrap iremos ver que toda parte de CSS que tem no bootstrap o ngx já esta colocando automaticamente. Entao so precisar colocar a partir do modal-content:
+	>> <div class="modal" tabindex="-1">
+			<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+				<h5 class="modal-title">{{ title }}</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+				<p>{{ msg }}</p>
+				</div>
+				<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="onClose()">{{ cancelTxt }}</button>
+				<button type="button" class="btn btn-primary" (click)="onConfirm()">{{ okTxt }}</button>
+				</div>
+			</div>
+			</div>
+		</div>
+
+- Após isso, o modal ira aparecer o botão de Cancelar ja estara funcionando, menos o Sim. Agora eh pensar como eh que vamos escutar o click de Ok e até o click de cancelar pois no "cursos-lista.component.ts" a gente ta chamando essa popup. Precisa ter uma maneira de confirmar e de nao fazer nada.
+
+- Estou utilizando input properties para todo que esta vindo para esse componente filho e conseguimos acessar atraves do content. E na hora de sair sera que conseguiria usar o output propetier? Nao conseguiriamos utilizar nesse caso pq o componente pai que esta utilizando essa modal filha, nos teriamos que ter esse codigo dentro do HTML "cursos-lista.component.ts" para escutar os output, que é a parte de emitir eventos no Angular.
+
+- Talvez poderia criar um serviço global para poder compartilhar o resultado, mas nesse caso ficaria muito solto. O ideal é que a partir dessa popup "confirm-modal.component.ts" a gente conseguiria emitir os valores, e a gente pode fazer isso utilizando o proprio RXJS, ja vimos em exemplos passados do curso nos utilizamos o Subject, que é um objeto que vai emitir valores e a gente consegue escutar esses valores atraves de um Observable, podendo utilizar esse tipo de lógica para qualquer informaçao que queira compartilhar de forma global na aplicaçao. O Subject é como se fosse o emissor do RXJS.
+
+- Se vc quiser que ja emita um valor de inicio cria um BehaviorSubject. Nesse caso estamos interessados em escutar o valor quando esse Subject emitir o novo valor entao vai ser um Subject.
+
+- E o Subject é como se fosse a classe mae do Subject, entao o BehaviorSubject, ReplaySubject todos eles herdam da classe Subject.
+
+- A logica da modal esta perfeito, agora precisamos modificar o metodo ShowConfirm do arquivo "alert-modal.service.ts" para conseguir retornar o valor desse Subject como Observable para que nosso componnete consiga escutar e tomar a decisao de acordo com o botao que foi clicado.
+
+- A variavel content da modal bsModalRef em "alert-modal.service.ts" é uma variavel que consegue acessar tudo que for publico do "confirm-modal.component.ts", e nao apenas os inputs propeties. Dessa forma conseguimos acessar a variavel ConfirmResult
+
+- Uma coisa legal do TypeScript é fazer o casting que é transformar o valor no tipo correto dele. Nesse caso o content do arquivo "alert-modal.service.ts" é do tipo ConfirmModalComponent, assim conseguimos acessar o intelisense como o confirmResult. Se passar o mouse em cima do showConfirm veremos que ele esta retornando um Subject<boolean>.
+
+- O empty() está em 'deprecation', portanto a nova forma agora de usa-lo eh com EMPTY.
+
+- Se o resultado do switchMap for verdadeiro ira passar o Observable que é o remover o curso, entao colocamos no subscribe. Caso ele seja falso, vai retornar o EMPTY e assim que o RXJS emite um EMPTY a cadeia do subscribe nao é executado.
+
+
+#Curso Angular #134: Http: Serviço Genérico de CRUD
+- Como criar um serviço genérico de CRUD para que nao precise repetir o codigo base de CRUD toda vez que precisar tem um CRUD na aplicaçao.
+
+- Tanto no JAVA quanto no C# é muito comum usar o padrao repositorio que é o repositorio emperor, ou seja, vai ser uma classe responsavel pela funcionalidade basica. Caso precise colocar mais funcionalidade, ai sim escreveremos o codigo.
+
+- No TypeScript tem outra funcionalidade chamada de GENERICS, iremos passar na hora de utilizar a classe o tipo de crud que essa classe vai estar representando.
+
+- Se estiver trabalhado com MongoDB ou qualquer outro banco nao relacional, pode colocar o id como string, caso seja bd relacional o id é numero.
+
+- Agora será criado um serviço "cursos2.service.ts" para a gente testar. Primeiro temos que colocar a herança.
+
+- Caso queira reescrever um metodo da classe "crud.service.ts" basta colocar o nome do metodo e o override. Como em "cursos2.service.ts":
+	>> override loadByID() {
+			return null;
+		}
+
+
+#Curso Angular #135: Upload de Arquivo: Formulário Upload com Bootstrap 4
+- Criar uma tela para poder fazer upload de arquivo com bootstrap 4.
+
+- Na parte de componentes do formulario do bootstrap, depois acessar o File Browser.
+
+- O input de upload de arquivo do bootstrap eh um dos componentes que precisa de logica adicional para que funcione corretamente. Como so adicionamos CSS no Angular nao temos essa logica portanto percisamos adicionar isso manualmente. Vamos usar o JavaScript.
+
+- Ao debugar, ir em srcElement -> files.
+
+- Esse files como vimos no console é um array de aruqivos. No JavaScript tem uma interface para isso que é o <FileList>.
+
+- No JS tem o document.getElementByID. Mesmo utilizando Angular temos todo o acesso da API do JS para mesclar.
+
+
+Curso Angular #136: Http: Upload de Arquivo: Back-end com Node.js
+- Escreveremos um codigo NODE JS para consumir o upload de um arquivo.
+
+- Será criado um projeto NODE JS dentro do projeto do Angular. Crie uma pasta server, coloque o diretório para ele e coloque:
+	>> npm init -y
+
+- Precisaremos de uns pacote do NODE JS para consumir esse arquivo packjage.json. E utilizaremos o proprio EXPRESS.
+	>> npm install -save express body-parser connect-multiparty cors
+
+- Fazer um "-save" para salvar como dependecia, do "express" que vai ser o servidor, do "body-parser" para poder ler o json o arquivo que iremos enviar e alem disso instalar o connect-multipaty, e como o projeto Anuglar e o NODE vai estar em portas diferentes, instalar o cors
+
+- Para rodar:
+	>> npm run start
+
+- Por questoes de segurança do JS nao eh possivel dominios diferentes se comunicarem. Isso é uma questao de segurança se nao poderiamos pegar API de qualquer site e consumir. A API precisa deixar explicito que vai aceitar requisicoes de dominios diferentes. Para isso utilizaremos origin: '*' dizendo que vai aceitar tudo:
+	>> const corsOptions: { origin: '*'}
+
+- Depois tera uma aula de como linkar o Angular e o NODE sem precisar do cors.
+
+- Para utilizar o connect-multiparty a gente pode passar qual que é o diretorio que vai ficar salvo os arquivos. A gente vai apenas pegar essa arquivo e salvar dentro do diretorio mesmo.
+
+
+/* COMENTÁRIOS
+	ATUALIZAÇÃO!!:
+	O body Parser está descontinuado, você pode utilizar o próprio express para identificar o formato de entrada:
+
+	*
+	const app = express();
+
+	app.use(express.json());
+	app.use(express.urlencoded({ extended: true }));
+	*
+
+
+	em de usar:
+	*
+	app.arguments(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }))
+*/
+
+/* COMENTÁRIOS
+	Node:
+
+	const express = require('express');
+	const cors = require('cors');
+	const multiparty = require('connect-multiparty');
+
+	const app = express();
+	app.use(cors());
+	app.use(express.json());
+
+	app.use(express.urlencoded({ extended: true }));
+
+	const multipartMiddleware = multiparty({ uploadDir: './uploads' });
+
+	app.post('/upload', multipartMiddleware, (req, res) => {
+	const files = req.files;
+	console.log(files);
+	res.json({ message: files });
+	});
+
+	app.listen(8000);
+*/
+
+
+#Curso Angular #137: Http Upload de Arquivo: Request com FormData
+- Caso o usuário coloque o mesmo arquivo duas vezes, a estrutura de dados Set do proprio JavaScript ja faz esse filtro para nao possibilitar.
+
+- O objeto Set permite que você armazene valores únicos de qualquer tipo, desde valores primitivos a referências a objetos.
+
+- O FormData() construtor cria um novo objeto FormData.
+
+- A interface FormData fornece uma maneira fácil de construir um conjunto de pares chave/valor representando campos de um elemento form e seus valores, os quais podem ser facilmente enviados utilizado o método send() do XMLHttpRequest. Essa interface utiliza o mesmo formato que um form utilizaria se o tipo de codificação estivesse configurado como "multipart/form-data".
+
+- Da mesma forma, a interface FormData permite construir um conjunto de pares chave/valor representando campos de formulário e seus valores em JavaScript.
+
+- Existe duas versoes deste metodo: um de dois e um outro de tres:
+	>> formData.append(name, value);
+	>> formData.append(name, value, filename);
+
+1) name
+	O nome do campo cujos dados estão contidas em value.
+2) value
+	O valor deste campo . Nas duas versões este é a USVString (en-US), ou  caso não seja , este é convertido em string. Na versão de tres parametros este pode ser Blob, File, ou  USVString (en-US), de novo, caso nenhum deses forem especificados  este valor é convertido em uma string.
+3) filename Optional
+	O filename reporta para o servidor (a USVString (en-US)), quando a Blob ou File é passado como o segundo parametro. O default filename para  Blob o objecto é "blob".
+
+- A gente tambem pode instanciar e chamar o metodo Http request do Angular com nossos parametros. Exemplo feito no "upload-file.service.ts".
+
+- O primeiro parametro é o tipo de metodo (POST, DELETE, GET, PUT,..). O segundo parametro é a URL, o terceiro sao as opçoeos que existem 3 opçoes.
+
+- As 3 opçoes do terceiro parametro sao: init (as informaçoes), body (seria o corpo do request) e ..
+
+- No caso de uploads de arquivos a gente nao envia JSON, enviamos o arquivo. Assim enviamos o multiform data e para isso instanciaremos.
+
+- Lembrando de usar Unsubscribe. Lembrando que como estamos usando cors é que nos cors ele envia uma requisiçao para verificar se ta tudo ok e a proxima requicisao  de fato. No caso do take(1) nao eh uma boa ideia, e com cors o ideal é usar o Unsubscribe dentro do ngOnDestroy.
+
+
+#Curso Angular #138: Http: Removendo CORS com Angular Proxy
+- No caso do Angular nao importe se esta usando PHP, JAVA, Python, Ruby ou qualquer outra linguagem de backend. Na hora de fazer o deploy para produçao existem diversas possibildiades: uma delas é colocar o backend junto do frontend (caso seja uma aplicacao pequena que nao tenha muita necessidade de escalar, isto é, nao tem problema ter um monolito com back e front juntos)
+
+- E se vai fazer uma pacote do Angular rodando com DOCKER utilizando o servidor NGINX, esse servidor tambem tem a opçao de habilitar o proxy por la. Nesse caso tambem nao tem necessidade de habilitar o cors no BACKEND e eh isso que vamos fazer.
+
+- Após tirar o cors do "index.js" irá dar um erro bloqueado pela politica do cors, ou seja, local4200 nao se conecta com localhost8000 pois sao dominios diferentes. Como consegue habilitar o proxy do Angular pra funcionar com qualquer backend? Existem duas maneiras: criar como arquivo JavaScript e como Arquivo json
+
+1) Arquivo JavaScript
+	- Objeto dentro de PROXY_CONFIG contem qual que é a configuraçao para o Angular conseguir se conectar com o backend sem usar o cors.
+	- Criar o context: '/api'. Assim tudo que nao for rota e for URL que vai ser uma chamada para o backend.
+	- secure: false quer dizer que nao tem HTTPS
+	- Opçao no proxy de fazer um rewrite, rescrever o caminho.
+
+	Quando o Angular for fazer a chamada, vai fazer:
+		>> http://localhost:8000/api/upload
+	Depois disso vai passar para o proxy e modificar, pegando o /api e no lugar dele colocar vazio, configurado no pathRewrite:
+		>> http://localhost:8000/upload
+2) Arquivo JSON
+	- Mesma coisa que do Javascript mas em formato JSON.
+	- Depois modificar tambem no "package.json" de:
+		>> ng serve --proxy-config proxy.conf.js
+	- Para
+		>> ng serve --proxy-config proxy.conf.json
+
+- Para poder utilizar isso, tem que ir no "package.json" e adicionar uma flag --proxy-config e o nome do arquivo que é proxy.conf.js ou o proprio json.
+
+- Como boa prática colocar no "environment.ts" e também no "environment.prod.ts"
+	>> BASE_URL: '/api'
+
+- Lembrar agora de dar NPM RUN START ou..
+	> cd server/src/index.js
+
+- E também dar npm run start no proprio Angular (nao eh mais ng serve) pois com o npm run start dessa forma ele vai fazer o ng serve e fazer a configuração do proxy (lembra da flag --proxy-config no arquivo "package.json").
+
+#Curso Angular #139: Upload Arquivo: Barra de Progresso + Observando Eventos Http
+- Ao fazer o upload de um arquivo grande, irá demorar para carregar no browser. Porem esse arquivo demorou alguns segundos. 5s na tela sem resposta nenhuma ao usuario e muito tempo e precisa de alguma forma mostrar que o sistema ta fazendo algo.
+
+- Poderia colocar no subscribe do arquivo "upload-file.component.ts", antes de receber uma resposta, um pipe, um tap, iniciar um spiner e quando estivesse dentro do subscribe, recebesse o response e sumir com o spiner. 
+
+- Em arquivos grandes eh melhor mostrar o proguesso para o usuario tambem!
+
+- Para isso voltaremos no serviço "upload-file.service.ts", ir na chamada do POST onde passa tanto o link (endpoint do backend) tanto o formData onde tem a informaçao do arquivo. Se colocar uma ',' o proprio intelisense do VS vai mostrar as opçoes de header, observer... E colocaremos a opçao observer colocando pra observar events.
+
+- Com isso o Angular vai reportar todos os eventos http que estao acontencendo.
+
+- Houve um {type: 0} e depois um HttpResposne que esteve com o status 200 e o statusText ok. Como saberemos qual o tipo de evento, pois no console.log o type 0 não quer dizer uma coisa.
+
+- O Angular tem um enumerador para ver qual o tipo de Evento que foi disparado. Existe um objeto HttpEventType e se dentro do VS clicar com o ctrl+click abriremos a declaraçao dele com o arquivo do TS e ver o que significa de cada numero. Esses numeros sao chamados de numeros magicos.
+
+- O codigo 0 significa Sent, significando que o request foi enviado para o servidor. Existem outros tipos:
+	Sent = 0,
+    /**
+     * An upload progress event was received.
+     */
+    UploadProgress = 1,
+    /**
+     * The response status code and headers were received.
+     */
+    ResponseHeader = 2,
+    /**
+     * A download progress event was received.
+     */
+    DownloadProgress = 3,
+    /**
+     * The full response including the body was received.
+     */
+    Response = 4,
+    /**
+     * A custom event from an interceptor or a backend.
+     */
+    User = 5
+
+- Temos o UploadProgress para capturar o proguesso do upload. Importante que so vai funcionar com upload e download de arquivo, nao funciona pra HTTP GET, POST, PUT e Delete.
+
+- No serviço adicionaremos mais uma propriedade para capturar qual que é o proguesso.
+
+- No console agora aparecera diversas informaçoes:
+	type 0: que é o Sent
+	type 1: Proguesso de upload
+	loaded: quanto que foi carregado desse arquivo
+	total: tamanho total
+
+- O loaded chega ate o tamanho total que é 100%. Quando isso foi feito recemos um HeaderResponse dizendo que o upload foi ok e tambem o type 3 que é o DownloadProgress (resposta que recebeu do servidor tambem foi feita no response, pouca informaçao) e no final recebe de novo o HttpResponse com o status ok indicando que o upload foi concluido.
+
+- Com essas informaçoes obtemos uma porcentagem.
+
+
+#Curso Angular #140: Http: Criando operador RxJS customizado
+- Na aula anterior aprendemos como capturar eventos e também o proguesso de upload  de arquivos. Com isso chegamos ao codigo	
+	>>  onUpload() {
+			if (this.files && this.files.size > 0) {
+			this.service.upload(this.files, environment.BASE_URL + '/upload') // '/api/upload' tava tbm 'http://localhost:8000/upload'
+				.subscribe((event: HttpEvent<Object>) => {
+				console.log(event);
+				if (event.type == HttpEventType.Response) { //download concluido
+					console.log('Upload Concluído');
+				} else if (event.type == HttpEventType.UploadProgress){
+					const percentDone = Math.round((event.loaded * 100) / event.total);
+					console.log('Progresso', percentDone);
+					this.progress = percentDone;
+					
+				}
+				
+				});
+			}
+		}
+
+- Imagina uma aplicação grande com upload em 5 lugares. Isso sinigica que criaremos outro componente de upload de arquivos, com tela com outros campos do formulario e fazer um ctrl c+ ctrl v desse codigo. Dessa forma iriamos duplicar codigos.
+
+- Uma alternativa é criar nossos proprios operadores do RXJS. Temos dois tipos de operadores que podemos criar para esse exemplo especifico:
+	Operador para: if (event.type == HttpEventType.Response) { //download concluido
+            console.log('Upload Concluído');
+          }
+		  
+	Outro operador para: else if (event.type == HttpEventType.UploadProgress){
+            const percentDone = Math.round((event.loaded * 100) / event.total);
+            console.log('Progresso', percentDone);
+            this.progress = percentDone;
+            
+          }
+
+- Criaremos uma arquivo na pasta "shared" denonimado "rjx-operators.ts". Para criar trabalhará apenas com TS e JS puro, sem a presença do Angular.
+
+- No método uploadProgress passaremos a função de callback o nosso numero. 
+
+
+#Curso Angular #141: Http: Download de Arquivo
+- Fazerá exemplos de EXCEL e PDF. No entanto o código é geral, então pode fazer pra qualquer tipo.
+
+- Pode ser que o código do BACKEND esteja criando PDF ou EXCEL a partir do zero, utilizando uma biblitoeca pra isso, seja com JAVA, PHP, C# ou até NODE. Mas para facilitar já temos esses arquivos prontos.
+
+- Utilizará o recurso do NODE JS que é o EXPRESS que a variável res (response) tem um método chamado de download e esse método de download já vai setar todas as inforamções no cabeçalho do arquivo para mandar ao front-end.
+
+- Para testar bastar inserir o link do endpoint no browser do opera. Ao clicar fazerá o download.
+	>> "http://localhost:8000/downloadExcel"
+
+- Agora focaremos na parte do Angular. Antes disso é importante saber que, como o Angular fornece apenas para a gente a parte de fazer o request para o servidor para a URL do endpoint que precisa fazer o download do arquivo. Ele não lida com a parte de downloads de arquivo, quem é o responsável é o browser.
+
+- Para fazer o download em si utilizará JavaScript puro e se preocupar com os browsers que estamos dando suporte para a nossa aplicação (chroome, firefox...). Resumindo, a única coisa que o Angular vai fazer é fornecer o GET para a gente fazer o GET ao endpoint.
+
+- No arquivo "upload-file.service.ts" será feito o método download com o parâmetro url (que a gente passará). Uma coisa a se observar no return é que iremos fornecer a url (passada pelo parâmetro) e as opções tambem.
+
+- Nessas opções tem outro detalhe, se faz apenas o GET por padrão o Angular faz o retorno como JSON. Só que o nosso responseType quando está fazendo donwload de arquivo não recebe um JSON, mas sim um BLOB (coleção de bytes já que é um arquivo). Dessa forma o responseType será do tipo blob:
+	>> download(url: string) {
+			return this.http.get(url, {
+			responseType: 'blob'
+			})
+		}
+
+- Se quiser depois para obter certas informações, pode colocar um 'blob' as 'json' principlamente se quiser fazer a parte de progresso de download, podendo pedir para fazer o reportProgress: true. Só que uma coisa importante para o reportProgress é que o BACKEND tem que setar o header do content-length. Porque? Porque o Angular não tem como saber qual o tamanho completo do arquivo (só sabera o tamanho completo do arquivo após terminar o download)
+
+- Ao fazer no "upload-file.component.ts" o subscribe ao método do "upload-file.service.ts" o seguinte:
+	>> onDownloadExcel() {
+			this.service.download(environment.BASE_URL + '/downloadExcel')
+			.subscribe((res: any) => console.log(res));
+		}
+
+- Terá no console do browser do Opera o tamanho do arquivo e o tipo do BLOB (quando faz o response.donwload no NODE JS automaticamente identifica o tipo do arquivo). E não terá arquivo nenhum sendo baixado.
+
+- Quando programar o BACKEND é importante configurar o tipo de retorno. No caso de EXCEL existe tanto o "application/vnd.ms-excel" quanto o "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", este último ainda da suporte para internet explorer e chroome.
+
+- Lembrando que ainda não está baixando o arquivo, e é ai que entra o JavaScript. No arquivo "upload-file.component.ts"
+	>> const file = new Blob([res], {
+        type: res.type
+      });
+	  
+- Note que podemos pegar o type do res porque colocamos no "upload-file.service.ts" o arquivo do tipo BLOB como JSON também.
+
+- Agora será criado um LINK utilizando um objeto (o próprio const file).
+	>> const blob = window.URL.createObjectURL(file);
+
+- Com isso conseguimos fazer uma gambiarra criando um elemento, criar um link, setar o href (que é a url no arquivo) e com isso clicaremos nesse link por trás do pano (o usuario nao clicando) fazendo o download do arquivo.
+
+- Pegará o link.href e setar o blob que é um objeto com link e pegaremos o link.download pra botar o nome do arquivo. Depois disso clicaremos no link utilizando link.click() e no final pegaremos o window.URL de novo e remover esse arquivo, colocando um revokeObjectURL passando o blob, fazendo um link.remove().
+	>> const file = new Blob([res], {
+        type: res.type
+      });
+
+      const blob = window.URL.createObjectURL(file);
+
+      const link = document.createElement('a');
+      link.href = blob;
+      link.download = 'report.xlsx';
+
+      link.click();
+
+      window.URL.revokeObjectURL(blob);
+      link.remove();
+
+- Feito a lógica precisa customizar para outros browsers. No fim foi feito a refatoração do código usando o método handleFile no arquivo "upload-file.service.ts"
+
+
+#Curso Angular #142: Criando tela de pesquisa
+- Pesquisa no Angular de forma não reativa para depois ser reativa.
+
+- Código HTML E CSS: https://bootsnipp.com/snippets/Q0eE1
+
+
+#Curso Angular #143: Http: Passando Parâmetros na URL (HttpParams)
+- Aprender como passar parâmetros na URL de forma mais elegante do que concatenar strings;
+
+- Iremos listar informações. Iremos utilizar o próprio CDN que é um repositorio de biblitoeca JS e também CSS. 
+
+- Link: cdnjs.com/api
+
+- '?search=angular&fields=filename,description,version,homepage' ai tem tantos os campos quanto a parte da busca. Poderia botar checkbox com as informações com quais campos o usuario queria ver.
+
+- Como fazer pesquisa utilizando queryParams? Primeiro existe riscos ao fazer isso:
+	>> ... '.get(this.SEARCH_URL + '?search=' + value + '&fields=' + fields)'
+
+- Angular tem uma maneira mais elegante de fazer isso.
+
+- Cria uma constante:
+	>> ... 'const params = {
+        search: value,
+        fields: fields
+      }'
+- Depois aplica no get com o httparams:
+	>>.get(this.SEARCH_URL, { params })
+
+- No entanto esse jeito é caso tenha todos os parametros, caso queira consturir os parametros de forma dinamica podemos usar o objeto do Angular que é o HttpParams. (Semelhante ao URLSearchParams do JavaScript)
+
+>>	let params = new HttpParams();
+	params = params.set('search', value);
+	params = params.set('fields', fields);
+
+- Caso tenha mais de um valor para o search pode usar um append.
+
+
+#Curso Angular #144: Http: Pesquisa/Busca com Programação Reativa
+- Seria legar ir vendo o resultado a medida que digitamos, que seria mais ou menos com auto sugestão e auto complete.
+
+- Escutar quais sao as mudanças de valores do proprio campo que se chama this.queryField. Nos formularios reativos aprendemos que podemos acessar uma propriedade que se chama valueChanges que retornau um Observable.
+
+- No entanto são muitas chamadas para o http então é importante colocar umas restriçoes. Uma delas é ter um minimo de caracteres, para isso usa-se o método filter.
+
+- Além disso enviar o valor apenas quando ele mudar, usando entao o distinctUntilChanged(), ignrando os valores repetidos e enviar o novo valor quando apenas mudar.
+
+- Também nao quer fazer requisiçao para o servidor a cada letra que digitar. Para isso usar o operador o debounceTime() para aplicar um delay de 200milisegundos.
+
+- Agora chegou finalmente o momento de fazer a requisiçao. Utilizaremos o switchMap que é para evitar em colocar chamads aninhadas no Subscribe. SwitchMap irá pegar esse valor que estamso recebendo e transformar em um outro Observable e o Switchmap cancela requisiçoes anteriores visto que é uma busca estamos interessados em obter o resultado da ultima requisiçao, podendo cancelar qualquer requisiçao anterior e focar em receber a ultima.
+
+
+
